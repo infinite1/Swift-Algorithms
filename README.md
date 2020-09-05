@@ -189,3 +189,99 @@ class Solution {
 }
 ```
 
+## 160. Intersection of Two Linked Lists
+
+### Two Pointers
+
+time complexity: O(m + n)
+
+space complexity: O(1)
+
+双指针便利两个链表A和B，如果指针P1先遍历完链表A，P1便指向链表B的head， 类似的，如果指针P2先遍历完，P2指向链表A的head。*如果两个链表无相交点，最终P1和P2都会为nil，因此跳出循环返回nil，说明没有相交点*
+
+```swift
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     public var val: Int
+ *     public var next: ListNode?
+ *     public init(_ val: Int) {
+ *         self.val = val
+ *         self.next = nil
+ *     }
+ * }
+ */
+
+class Solution {
+    func getIntersectionNode(_ headA: ListNode?, _ headB: ListNode?) -> ListNode? {
+        if headA == nil || headB == nil {
+            return nil
+        }
+        
+        var pos1 = headA, pos2 = headB 
+        while pos1 !== pos2 {
+            if pos1 == nil {
+                pos1 = headB
+            } else {
+                pos1 = pos1?.next
+            }
+            
+            if pos2 == nil {
+                pos2 = headA
+            } else {
+                pos2 = pos2?.next
+            }
+        }
+        
+        return pos1
+    }
+}
+```
+
+## 19. Remove Nth Node From End of List
+
+## Two Pass Algorithm
+
+先遍历得出链表的长度，再遍历删除（l - n + 1）个节点，*使用伪节点来避免讨论一些corner case，比如链表只有一个节点*。
+
+time complexity: O(L)
+
+space complexity: O(1)
+
+```swift
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     public var val: Int
+ *     public var next: ListNode?
+ *     public init() { self.val = 0; self.next = nil; }
+ *     public init(_ val: Int) { self.val = val; self.next = nil; }
+ *     public init(_ val: Int, _ next: ListNode?) { self.val = val; self.next = next; }
+ * }
+ */
+class Solution {
+    func removeNthFromEnd(_ head: ListNode?, _ n: Int) -> ListNode? {
+        var pesudoNode = ListNode(0)
+        pesudoNode.next = head
+        
+        var prev: ListNode? = pesudoNode
+        let length = getLength(head)
+        for _ in stride(from: 0, to: length-n, by: 1) {
+            prev = prev?.next
+        }
+        prev?.next = prev?.next?.next
+        return pesudoNode.next
+    }
+    
+    private func getLength(_ head: ListNode?) -> Int {
+        var cur = head
+        var count = 0
+        while cur != nil {
+            cur = cur?.next
+            count += 1
+        }
+        return count
+    }
+}
+```
+
