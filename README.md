@@ -240,7 +240,7 @@ class Solution {
 
 ## 19. Remove Nth Node From End of List
 
-## Two Pass Algorithm
+### Two Pass Algorithm
 
 先遍历得出链表的长度，再遍历删除（l - n + 1）个节点，*使用伪节点来避免讨论一些corner case，比如链表只有一个节点*。
 
@@ -281,6 +281,80 @@ class Solution {
             count += 1
         }
         return count
+    }
+}
+```
+
+## 206. Reverse Linked List
+
+### recursive approach
+
+从head开始，将后面的链表看作已经排列好的链表，然后与head反转顺序。*每次递归调用后返回的都是链表的最后一个节点，或者说是反转链表的head*。
+
+time complexity: O(n)
+
+space complexity: O(n)
+
+```swift
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     public var val: Int
+ *     public var next: ListNode?
+ *     public init() { self.val = 0; self.next = nil; }
+ *     public init(_ val: Int) { self.val = val; self.next = nil; }
+ *     public init(_ val: Int, _ next: ListNode?) { self.val = val; self.next = next; }
+ * }
+ */
+class Solution {
+    func reverseList(_ head: ListNode?) -> ListNode? {
+        if head == nil || head?.next == nil { return head }
+        var cur = head
+        var node = reverseList(cur?.next)
+        cur?.next?.next = cur
+        cur?.next = nil
+        return node
+    }
+}
+```
+
+## 203. Remove Linked List Elements
+
+在head前添加一个伪head，这样的话可以避免讨论删除的数刚好在头部的corner case
+
+time complexity: O(n)
+
+space complexity: O(1)
+
+```
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     public var val: Int
+ *     public var next: ListNode?
+ *     public init() { self.val = 0; self.next = nil; }
+ *     public init(_ val: Int) { self.val = val; self.next = nil; }
+ *     public init(_ val: Int, _ next: ListNode?) { self.val = val; self.next = next; }
+ * }
+ */
+class Solution {
+    func removeElements(_ head: ListNode?, _ val: Int) -> ListNode? {
+        var pesudoNode = ListNode(0)
+        pesudoNode.next = head
+        
+        var prev: ListNode? = pesudoNode, cur = head
+        while cur != nil {
+            if cur?.val == val {
+                prev?.next = cur?.next
+                cur = cur?.next
+            } else {
+                cur = cur?.next
+                prev = prev?.next
+            } 
+        }
+        
+        return pesudoNode.next
+        
     }
 }
 ```
