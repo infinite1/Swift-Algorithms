@@ -102,7 +102,7 @@ class MyLinkedList {
 
 time complexity: O(n)
 
-space complexity: 1
+space complexity: O(1)
 
 ```swift
 /**
@@ -128,6 +128,63 @@ class Solution {
             }
         }
         return false
+    }
+}
+```
+
+## 142. Linked List Cycle II
+
+### Two Pointers
+
+time complexity: O(n)
+
+space complexity: O(1)
+
+先找到交点，如果有环的话，在用两个指针指向head和交点，一次只移动一步，指针相遇的地方即为环的起始点
+
+```swift
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     public var val: Int
+ *     public var next: ListNode?
+ *     public init(_ val: Int) {
+ *         self.val = val
+ *         self.next = nil
+ *     }
+ * }
+ */
+
+class Solution {
+    func detectCycle(_ head: ListNode?) -> ListNode? {
+        
+        var head = head, intersect = getIntersect(head)
+        if intersect == nil { return nil}
+        
+        while head !== intersect {
+            head = head?.next
+            intersect = intersect?.next
+        }
+        
+        return head
+        
+    }
+    
+    private func getIntersect(_ head: ListNode?) -> ListNode? {
+        if head == nil || head?.next == nil {
+            return nil
+        }
+        
+        var slow = head, fast = head
+        while fast != nil && fast?.next != nil {
+            slow = slow?.next
+            fast = fast?.next?.next
+            if slow === fast {
+                return slow
+            }
+        }
+        
+        return nil
     }
 }
 ```
