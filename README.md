@@ -359,3 +359,89 @@ class Solution {
 }
 ```
 
+## 328. Odd Even Linked List
+
+even?.next != nil确保odd?.next不会指向nil，如果odd的下一个节点是nil，那么由odd = odd?.next也会指向nil，连接odd链表和even链表时就会变成nil.next = evenHead，这当然不是我们想要的
+
+time complexity: O(n)
+
+space complexity: O(1)
+
+```swift
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     public var val: Int
+ *     public var next: ListNode?
+ *     public init() { self.val = 0; self.next = nil; }
+ *     public init(_ val: Int) { self.val = val; self.next = nil; }
+ *     public init(_ val: Int, _ next: ListNode?) { self.val = val; self.next = next; }
+ * }
+ */
+class Solution {
+    func oddEvenList(_ head: ListNode?) -> ListNode? {
+        if head == nil { return nil }
+        var odd = head, even = head?.next, evenHead = even
+        while even != nil && even?.next != nil {
+            odd?.next = even?.next
+            odd = odd?.next
+            even?.next = odd?.next
+            even = even?.next
+        }
+        odd?.next = evenHead
+        return head
+    }
+}
+```
+
+## 234. Palindrome Linked List
+
+### Copy Linked List into array and use two pointers approach
+
+time complexity: O(n)
+
+space complexity: O(n)
+
+```swift
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     public var val: Int
+ *     public var next: ListNode?
+ *     public init() { self.val = 0; self.next = nil; }
+ *     public init(_ val: Int) { self.val = val; self.next = nil; }
+ *     public init(_ val: Int, _ next: ListNode?) { self.val = val; self.next = next; }
+ * }
+ */
+class Solution {
+    func isPalindrome(_ head: ListNode?) -> Bool {
+        if head == nil || head?.next == nil {
+            return true
+        }
+        var arr = toArray(head)
+        print(arr)
+        var left = 0, right = arr.count - 1
+        while left < right {
+            if arr[left] != arr[right] {
+                return false
+            } else {
+                left += 1
+                right -= 1
+            }
+        }
+        return true
+    
+    }
+    
+    private func toArray(_ head: ListNode?) -> [Int] {
+        var cur = head
+        var arr = [Int]()
+        while cur != nil {
+            arr.append(cur!.val)
+            cur = cur?.next
+        }
+        return arr
+    }
+}
+```
+
