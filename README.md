@@ -6,6 +6,10 @@
 
 使用哨兵节点当作伪head，这样的话就不需要讨论list为空的情况，而且可以把addAtHead和addAtTail都简化为addAtIndex的特殊形式。*链表的head是哨兵节点，真正的head可以用head.next访问*
 
+time complexity: O(k) of addAtIndex, get and deleteIndex, O(1) for addAtHead, O(n) for addAtTail
+
+space complexity: O(1)
+
 ```swift
 class Node {
     let val: Int
@@ -95,6 +99,153 @@ class MyLinkedList {
  * obj.deleteAtIndex(index)
  */
 ```
+
+### Double Linked List
+
+和单链表类似，在链表末尾添加伪尾节点，每次插入或删除节点时，可以从head或者tail遍历，提升访问速度。*在addAtIndex里，通过找到当前节点的predecessor节点和successor节点，再进行节点的插入，不过需要仔细考虑边界问题*
+
+time complexity: O(min(k, n - k)) of addAtIndex, get and deleteIndex, O(1) for getHead and getTail
+
+space complexity: O(1)
+
+```swift
+class Node {
+    let val: Int
+    var next: Node?
+    var prev: Node?
+    init(_ val: Int) {
+        self.val = val
+    } 
+}
+
+class MyLinkedList {
+    
+    
+    private var head: Node?
+    private var tail: Node?
+    private var size: Int
+
+    /** Initialize your data structure here. */
+    init() {
+        head = Node(0)
+        tail = Node(0)
+        head?.next = tail
+        tail?.prev = head
+        size = 0
+    }
+    
+    /** Get the value of the index-th node in the linked list. If the index is invalid, return -1. */
+    func get(_ index: Int) -> Int {
+        if index < 0 || index >= self.size {
+            return -1
+        }
+        
+        var curr: Node?
+        if index < self.size - index - 1 {
+            // start from head
+            curr = self.head
+            for _ in stride(from: 0, to: index + 1, by: 1) {
+                curr = curr?.next
+            }
+            
+        } else {
+            // start from tail
+            curr = self.tail
+            for _ in stride(from: 0, to: self.size - index, by: 1) {
+                curr = curr?.prev
+            }
+        }
+        
+        return (curr?.val)!
+    }
+    
+    /** Add a node of value val before the first element of the linked list. After the insertion, the new node will be the first node of the linked list. */
+    func addAtHead(_ val: Int) {
+        self.addAtIndex(0, val)
+    }
+    
+    /** Append a node of value val to the last element of the linked list. */
+    func addAtTail(_ val: Int) {
+        self.addAtIndex(self.size, val)
+    }
+    
+    /** Add a node of value val before the index-th node in the linked list. If index equals to the length of linked list, the node will be appended to the end of linked list. If index is greater than the length, the node will not be inserted. */
+    func addAtIndex(_ index: Int, _ val: Int) {
+        // if index is greater than linkedlist size
+        // or index < 0, the node will not be inserted
+        if index > self.size || index < 0 { return }
+        
+        self.size += 1
+        var pred: Node?, succ: Node?
+        if index < self.size - index - 1 {
+            // start from head
+            pred = self.head
+            for _ in stride(from: 0, to: index, by: 1) {
+                pred = pred?.next
+            }
+            succ = pred?.next
+            
+        } else {
+            // start from tail
+            succ = self.tail
+            for _ in stride(from: 0, to: self.size - index - 1, by: 1) {
+                succ = succ?.prev
+            }
+            pred = succ?.prev
+        }
+        
+        // create new node with val
+        let toAdd = Node(val)
+
+        // connect with pred and succ
+        toAdd.prev = pred
+        toAdd.next = succ
+        pred?.next = toAdd
+        succ?.prev = toAdd
+        
+    }
+    
+    /** Delete the index-th node in the linked list, if the index is valid. */
+    func deleteAtIndex(_ index: Int) {
+        if index < 0 || index >= self.size { return }
+        
+        var pred: Node?, succ: Node?
+        if index < self.size - index - 1 {
+            // start from head
+            pred = self.head
+            for _ in stride(from: 0, to: index, by: 1) {
+                pred = pred?.next
+            }
+            succ = pred?.next?.next
+            
+        } else {
+            // start from tail
+            succ = self.tail
+            for _ in stride(from: 0, to: self.size - index - 1, by: 1) {
+                succ = succ?.prev
+            }
+            pred = succ?.prev?.prev
+        }
+        
+        self.size -= 1
+        pred?.next = succ
+        succ?.prev = pred
+        
+    }
+}
+
+/**
+ * Your MyLinkedList object will be instantiated and called as such:
+ * let obj = MyLinkedList()
+ * let ret_1: Int = obj.get(index)
+ * obj.addAtHead(val)
+ * obj.addAtTail(val)
+ * obj.addAtIndex(index, val)
+ * obj.deleteAtIndex(index)
+ */
+```
+
+
 
 ## 141. Linked List Cycle
 
