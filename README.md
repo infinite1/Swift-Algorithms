@@ -596,3 +596,48 @@ class Solution {
 }
 ```
 
+## 21. Merge Two Sorted Lists
+
+### Iteration Approach
+
+使用伪head节点来方便返回head
+
+time complexity: O(m+n)
+
+space complexity: O(1)
+
+```swift
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     public var val: Int
+ *     public var next: ListNode?
+ *     public init() { self.val = 0; self.next = nil; }
+ *     public init(_ val: Int) { self.val = val; self.next = nil; }
+ *     public init(_ val: Int, _ next: ListNode?) { self.val = val; self.next = next; }
+ * }
+ */
+class Solution {
+    func mergeTwoLists(_ l1: ListNode?, _ l2: ListNode?) -> ListNode? { 
+        var p1 = l1, p2 = l2
+        var pesudoHead = ListNode(0)
+        var prev = pesudoHead
+        while let cur1 = p1, let cur2 = p2 {
+            let val1 = cur1.val, val2 = cur2.val
+            if val1 <= val2 {
+                prev.next = cur1
+                p1 = cur1.next
+            } else {
+                prev.next = p2
+                p2 = cur2.next
+            }
+            prev = prev.next!
+        }
+        
+        prev.next = p1 ?? p2
+        
+        return pesudoHead.next
+    }
+}
+```
+
