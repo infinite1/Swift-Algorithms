@@ -1,5 +1,52 @@
 # Swift-Algorithms
 
+## 2. Add Two Numbers
+
+使用伪head，双指针和基本数学加法(val1+val2+carry)来构建链表
+
+time complexity: O(max(m, n))
+
+space complexity: O(max(m, n)), 新链表长度为max(m, n)
+
+```swift
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     public var val: Int
+ *     public var next: ListNode?
+ *     public init() { self.val = 0; self.next = nil; }
+ *     public init(_ val: Int) { self.val = val; self.next = nil; }
+ *     public init(_ val: Int, _ next: ListNode?) { self.val = val; self.next = next; }
+ * }
+ */
+class Solution {
+    func addTwoNumbers(_ l1: ListNode?, _ l2: ListNode?) -> ListNode? {
+        var pesudoHead = ListNode(0)
+        var p1 = l1, p2 = l2, prev = pesudoHead
+        var carry = 0
+        while p1 != nil || p2 != nil {
+            let val1 = p1 != nil ? p1!.val : 0
+            let val2 = p2 != nil ? p2!.val : 0
+            let sum = val1 + val2 + carry
+            carry = sum / 10
+            let toAdd = ListNode(sum % 10)
+            prev.next = toAdd
+            prev = toAdd
+            p1 = p1?.next
+            p2 = p2?.next
+        }
+        
+        if carry == 1 {
+            prev.next = ListNode(carry)
+        }
+        
+        return pesudoHead.next
+    }
+}
+```
+
+
+
 ## 707. Design Linked List
 
 ### Use Single Linked List
