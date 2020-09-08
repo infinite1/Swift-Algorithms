@@ -1,5 +1,360 @@
 # Swift-Algorithms
 
+## 145. Binary Tree Postorder Traversal
+
+time complexity: O(n)
+
+space complexity: O(n) worset case, average O(H), where H is tree height
+
+```swift
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     public var val: Int
+ *     public var left: TreeNode?
+ *     public var right: TreeNode?
+ *     public init() { self.val = 0; self.left = nil; self.right = nil; }
+ *     public init(_ val: Int) { self.val = val; self.left = nil; self.right = nil; }
+ *     public init(_ val: Int, _ left: TreeNode?, _ right: TreeNode?) {
+ *         self.val = val
+ *         self.left = left
+ *         self.right = right
+ *     }
+ * }
+ */
+class Solution {
+    func postorderTraversal(_ root: TreeNode?) -> [Int] {
+        var results = [Int]()
+        
+        guard let root = root else {
+            return []
+        }
+        
+        results += postorderTraversal(root.left)
+        results += postorderTraversal(root.right)
+        results.append(root.val)
+        
+        return results
+    }
+}
+```
+
+
+
+## 94. Binary Tree Inorder Traversal
+
+time complexity: O(n)
+
+space complexity: O(n) worset case, average O(H), where H is tree height
+
+```swift
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     public var val: Int
+ *     public var left: TreeNode?
+ *     public var right: TreeNode?
+ *     public init() { self.val = 0; self.left = nil; self.right = nil; }
+ *     public init(_ val: Int) { self.val = val; self.left = nil; self.right = nil; }
+ *     public init(_ val: Int, _ left: TreeNode?, _ right: TreeNode?) {
+ *         self.val = val
+ *         self.left = left
+ *         self.right = right
+ *     }
+ * }
+ */
+class Solution {
+    func inorderTraversal(_ root: TreeNode?) -> [Int] {
+        var results = [Int]()
+        
+        guard let root = root else {
+            return []
+        }
+        
+        results += inorderTraversal(root.left)
+        results.append(root.val)
+        results += inorderTraversal(root.right)
+        
+        return results
+    }
+}
+```
+
+
+
+## 144. Binary Tree Preorder Traversal
+
+### recursive approach
+
+time complexity: O(n)
+
+space complexity: O(n) worset case, average O(H), where H is tree height
+
+```swift
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     public var val: Int
+ *     public var left: TreeNode?
+ *     public var right: TreeNode?
+ *     public init() { self.val = 0; self.left = nil; self.right = nil; }
+ *     public init(_ val: Int) { self.val = val; self.left = nil; self.right = nil; }
+ *     public init(_ val: Int, _ left: TreeNode?, _ right: TreeNode?) {
+ *         self.val = val
+ *         self.left = left
+ *         self.right = right
+ *     }
+ * }
+ */
+class Solution {
+    
+    
+    func preorderTraversal(_ root: TreeNode?) -> [Int] {
+        var results = [Int]()
+        
+        guard let root = root else {
+            return []
+        }
+        
+        results.append(root.val)
+        results += preorderTraversal(root.left)
+        results += preorderTraversal(root.right)
+        
+        return results
+    }
+}
+```
+
+
+
+## 61. Rotate List
+
+time complexity: O(n)
+
+space complexity: O(1)
+
+```swift
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     public var val: Int
+ *     public var next: ListNode?
+ *     public init() { self.val = 0; self.next = nil; }
+ *     public init(_ val: Int) { self.val = val; self.next = nil; }
+ *     public init(_ val: Int, _ next: ListNode?) { self.val = val; self.next = next; }
+ * }
+ */
+class Solution {
+    func rotateRight(_ head: ListNode?, _ k: Int) -> ListNode? {
+        if head == nil || head?.next == nil {
+            return head
+        }
+        
+        // connect tail into head
+        var oldTail = head
+        var n = 1
+        while oldTail?.next != nil {
+            oldTail = oldTail?.next
+            n += 1
+        }
+        oldTail?.next = head
+        
+        // find new tail and new head
+        var newTail = head
+        for _ in 0 ..< n - k % n - 1 {
+            newTail = newTail?.next
+        }
+        let newHead = newTail?.next
+        
+        newTail?.next = nil
+        return newHead
+    }
+}
+```
+
+
+
+## 138. Copy List with Random Pointer
+
+### recursive approach
+
+*the head can be any node in the list*
+
+time complexity: O(n)
+
+space complexity: O(n), 字典和递归的stack都会占用n的复杂度
+
+```swift
+/**
+ * Definition for a Node.
+ * public class Node {
+ *     public var val: Int
+ *     public var next: Node?
+ *     public var random: Node?
+ *     public init(_ val: Int) {
+ *         self.val = val
+ *         self.next = nil
+ *    	   self.random = nil
+ *     }
+ * }
+ */
+
+class Solution {
+    var visited = [Node?: Node?]()
+    
+    func copyRandomList(_ head: Node?) -> Node? {
+        if head == nil {
+            return nil
+        }
+        
+        if visited[head] != nil {
+            return visited[head]!
+        }
+        
+        var copyNode = Node(head!.val)
+        
+        visited[head] = copyNode
+        
+        copyNode.next = copyRandomList(head?.next)
+        copyNode.random = copyRandomList(head?.random)
+        
+        return copyNode
+    
+    }
+}
+```
+
+
+
+## 708. Insert into a Sorted Circular Linked List
+
+双指针遍历
+
+1. insert between small and large value
+2. insert between tail and head if the value is larger than tail or smaller than head
+3. insert after head if all elements are the same
+
+time complexity: O(n)
+
+space complexity: O(1）
+
+```swift
+/**
+ * Definition for a Node.
+ * public class Node {
+ *     public var val: Int
+ *     public var next: Node?
+ *     public init(_ val: Int) {
+ *         self.val = val
+ *         self.next = nil
+ *     }
+ * }
+ */
+
+class Solution {
+    func insert(_ head: Node?, _ insertVal: Int) -> Node? {
+        if head == nil {
+            let node = Node(insertVal)
+            node.next = node
+            return node
+        }
+        
+        var prev = head, cur = head?.next
+        var toInsert = false
+        
+        repeat {
+            if prev!.val <= insertVal && insertVal <= cur!.val {
+                toInsert = true
+            } else if prev!.val > cur!.val  {
+                // if insertVal is larger than tail or smaller than head
+                // insert between tail and head
+                if insertVal < cur!.val || insertVal > prev!.val {
+                    toInsert = true
+                }
+                
+            }
+            
+            if toInsert {
+                let node = Node(insertVal)
+                prev?.next = node
+                node.next = cur
+                return head
+            }
+            
+            prev = cur
+            cur = cur?.next
+        } while prev !== head
+        
+        // if all elements are the same, insert after head
+        let node = Node(insertVal)
+        prev?.next = node
+        node.next = cur
+        
+        return head
+    }
+}
+```
+
+
+
+## 430. Flatten a Multilevel Doubly Linked List
+
+### DFS by recursion
+
+可以将这个问题看成是求DFS的preorder遍历
+
+time complexity: O(n), 每个节点都会被访问一遍
+
+space complexity: O(n), 如果是不平衡二叉树，所有的节点都有child，那么递归空间就会占用n的复杂度，如果所有节点都没有child，相当于tail recursion，只占用1的复杂度
+
+```swift
+/**
+ * Definition for a Node.
+ * public class Node {
+ *     public var val: Int
+ *     public var prev: Node?
+ *     public var next: Node?
+ *     public var child: Node?
+ *     public init(_ val: Int) {
+ *         self.val = val
+ *         self.prev = nil
+ *         self.next = nil
+ *         self.child  = nil
+ *     }
+ * }
+ */
+
+class Solution {
+    func flatten(_ head: Node?) -> Node? {
+        guard let head = head else { return nil}
+        
+        let pesudoHead = Node(0)
+        flattenDFS(pesudoHead, head)
+        
+        pesudoHead.next?.prev = nil
+        
+        return pesudoHead.next
+        
+    }
+    
+    func flattenDFS(_ prev: Node?, _ curr: Node?) -> Node? {
+        guard let curr = curr else { return prev }
+        
+        curr.prev = prev
+        prev?.next = curr
+        
+        let tempNext = curr.next
+        let tail = flattenDFS(curr, curr.child)
+        curr.child = nil
+        
+        return flattenDFS(tail, tempNext)
+        
+    }
+}
+```
+
+
+
 ## 2. Add Two Numbers
 
 使用伪head，双指针和基本数学加法(val1+val2+carry)来构建链表
