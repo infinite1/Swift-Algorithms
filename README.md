@@ -1,5 +1,462 @@
 # Swift-Algorithms
 
+## 117. Populating Next Right Pointers in Each Node II
+
+### Level Order Traversal
+
+time complexity: O(n)
+
+space complexity: O(n), depending on the level that have max number of nodes
+
+```swift
+/**
+ * Definition for a Node.
+ * public class Node {
+ *     public var val: Int
+ *     public var left: Node?
+ *     public var right: Node?
+ *	   public var next: Node?
+ *     public init(_ val: Int) {
+ *         self.val = val
+ *         self.left = nil
+ *         self.right = nil
+ *         self.next = nil
+ *     }
+ * }
+ */
+
+class Solution {
+    func connect(_ root: Node?) -> Node? {
+        guard let root = root else { return nil }
+        
+        var queue = [Node?]()
+        queue.append(root)
+        
+        while !queue.isEmpty {
+            let size = queue.count
+            
+            for i in 0 ..< size {
+                let node = queue.removeFirst()
+                if i < size - 1 {
+                    node?.next = queue[0]
+                }
+                
+                if let left = node?.left {
+                    queue.append(left)
+                }
+                
+                if let right = node?.right {
+                    queue.append(right)
+                }
+            }
+            
+        }
+        
+        return root
+    }
+}
+```
+
+
+
+## 116. Populating Next Right Pointers in Each Node
+
+time complexity: O(n)
+
+space complexity: O(n), depending on the level that have max number of nodes
+
+```swift
+/**
+ * Definition for a Node.
+ * public class Node {
+ *     public var val: Int
+ *     public var left: Node?
+ *     public var right: Node?
+ *	   public var next: Node?
+ *     public init(_ val: Int) {
+ *         self.val = val
+ *         self.left = nil
+ *         self.right = nil
+ *         self.next = nil
+ *     }
+ * }
+ */
+
+class Solution {
+    func connect(_ root: Node?) -> Node? {
+        guard let root = root else { return nil }
+        
+        var queue = [Node?]()
+        queue.append(root)
+        
+        while !queue.isEmpty {
+            let size = queue.count 
+            for i in 0 ..< size {
+                let node = queue.removeFirst()
+                if i < size - 1 {
+                    node?.next = queue[0]
+                }
+                
+                if let left = node?.left {
+                    queue.append(left)
+                }
+                if let right = node?.right {
+                    queue.append(right)
+                }
+            }
+        }
+        
+        return root
+    }
+}
+```
+
+
+
+## 105. Construct Binary Tree from Preorder and Inorder Traversal
+
+similar to 106, the only difference is we call `node.left` first because of preorder.
+
+time complexity: O(n), master theorem
+
+space complexity: O(n) 
+
+```swift
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     public var val: Int
+ *     public var left: TreeNode?
+ *     public var right: TreeNode?
+ *     public init() { self.val = 0; self.left = nil; self.right = nil; }
+ *     public init(_ val: Int) { self.val = val; self.left = nil; self.right = nil; }
+ *     public init(_ val: Int, _ left: TreeNode?, _ right: TreeNode?) {
+ *         self.val = val
+ *         self.left = left
+ *         self.right = right
+ *     }
+ * }
+ */
+class Solution {
+    var preOrderIndex = 0
+    var preOrder = [Int]()
+    var inOrder = [Int]()
+    var indexTable = [Int: Int]()
+    
+    func buildTree(_ preorder: [Int], _ inorder: [Int]) -> TreeNode? {
+        preOrder = preorder
+        inOrder = inorder
+        for i in 0 ..< inorder.count {
+            indexTable[inorder[i]] = i
+        }
+        return helper(0, inorder.count - 1)
+    }
+    
+    func helper(_ left: Int, _ right: Int) -> TreeNode? {
+        if left > right {
+            return nil
+        }
+        
+        let nodeVal = preOrder[preOrderIndex]
+        let node = TreeNode(nodeVal)
+        let index = indexTable[nodeVal]!
+        
+        preOrderIndex += 1
+        node.left = helper(left, index - 1)
+        node.right = helper(index + 1, right)
+        
+        return node
+    }
+}
+```
+
+
+
+## 106. Construct Binary Tree from Inorder and Postorder Traversal
+
+We call `root.right = helper(index + 1, right)` because postorder is left-right-node, so each time the  postIndex posts to a node which is right of the previous position.
+
+time complexity: O(n), master theorem
+
+space complexity: O(n) 
+
+```swift
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     public var val: Int
+ *     public var left: TreeNode?
+ *     public var right: TreeNode?
+ *     public init() { self.val = 0; self.left = nil; self.right = nil; }
+ *     public init(_ val: Int) { self.val = val; self.left = nil; self.right = nil; }
+ *     public init(_ val: Int, _ left: TreeNode?, _ right: TreeNode?) {
+ *         self.val = val
+ *         self.left = left
+ *         self.right = right
+ *     }
+ * }
+ */
+class Solution {
+    var indexTable = [Int: Int]()
+    var postOrder = [Int]()
+    var postIndex = 0
+    var inOrder = [Int]()
+
+    func buildTree(_ inorder: [Int], _ postorder: [Int]) -> TreeNode? {
+        postOrder = postorder
+        inOrder = inorder
+        postIndex = postorder.count - 1
+        for i in 0 ..< inorder.count {
+            indexTable[inorder[i]] = i
+        }
+        return helper(0, inorder.count - 1)
+    }
+    
+    func helper(_ left: Int, _ right: Int) -> TreeNode? {
+        if left > right {
+            return nil
+        }
+        
+        let rootVal = postOrder[postIndex]
+        let root = TreeNode(rootVal)
+        
+        let index = indexTable[rootVal]!
+        
+        postIndex -= 1
+        root.right = helper(index + 1, right)
+        root.left = helper(left, index - 1)
+        return root
+    }
+}
+```
+
+
+
+## 250. Count Univalue Subtrees
+
+### DFS
+
+time complexity: O(n)
+
+space complexity: O(n) worst case when the tree is completely unbalanced, average O(H) or O(logn) if the tree is completely balanced, where H is tree height
+
+```swift
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     public var val: Int
+ *     public var left: TreeNode?
+ *     public var right: TreeNode?
+ *     public init() { self.val = 0; self.left = nil; self.right = nil; }
+ *     public init(_ val: Int) { self.val = val; self.left = nil; self.right = nil; }
+ *     public init(_ val: Int, _ left: TreeNode?, _ right: TreeNode?) {
+ *         self.val = val
+ *         self.left = left
+ *         self.right = right
+ *     }
+ * }
+ */
+class Solution {
+    var count = 0
+    
+    func countUnivalSubtrees(_ root: TreeNode?) -> Int {
+        guard let root = root else { return count }
+        checkUnival(root)
+        return count
+    }
+    
+    private func checkUnival(_ root: TreeNode?) -> Bool {
+        if root?.left == nil && root?.right == nil {
+            count += 1
+            return true
+        }
+        
+        var isUnival = true
+        
+        // check if two children subtrees are unival
+        if root?.left != nil {
+            isUnival = checkUnival(root?.left) && isUnival && (root?.left)!.val == (root!.val)
+        }
+        if root?.right != nil {
+            isUnival = checkUnival(root?.right) && isUnival && (root?.right)!.val == (root!.val)
+        }
+        
+        if !isUnival { return false }
+        count += 1
+        return true
+    }
+}
+```
+
+
+
+## 112. Path Sum
+
+### recursion
+
+*the problem asks for root-to-leaf path sum*
+
+time complexity: O(n)
+
+space complexity: O(n) worst case when the tree is completely unbalanced, average O(H) or O(logn) if the tree is completely balanced, where H is tree height
+
+```swift
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     public var val: Int
+ *     public var left: TreeNode?
+ *     public var right: TreeNode?
+ *     public init() { self.val = 0; self.left = nil; self.right = nil; }
+ *     public init(_ val: Int) { self.val = val; self.left = nil; self.right = nil; }
+ *     public init(_ val: Int, _ left: TreeNode?, _ right: TreeNode?) {
+ *         self.val = val
+ *         self.left = left
+ *         self.right = right
+ *     }
+ * }
+ */
+class Solution {
+    func hasPathSum(_ root: TreeNode?, _ sum: Int) -> Bool {
+        guard let root = root else { return false }
+        if root.left == nil && root.right == nil { return root.val == sum }
+        return hasPathSum(root.left, sum - root.val) || hasPathSum(root.right, sum - root.val)
+    }
+}
+```
+
+
+
+## 101. Symmetric Tree
+
+### recursion
+
+time complexity: O(n)
+
+space complexity: O(n) worset case, average O(H) or O(logn) if the tree is completely balanced, where H is tree height
+
+```swift
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     public var val: Int
+ *     public var left: TreeNode?
+ *     public var right: TreeNode?
+ *     public init() { self.val = 0; self.left = nil; self.right = nil; }
+ *     public init(_ val: Int) { self.val = val; self.left = nil; self.right = nil; }
+ *     public init(_ val: Int, _ left: TreeNode?, _ right: TreeNode?) {
+ *         self.val = val
+ *         self.left = left
+ *         self.right = right
+ *     }
+ * }
+ */
+class Solution {
+    func isSymmetric(_ root: TreeNode?) -> Bool {
+        return isMirror(root, root)
+    }
+    
+    func isMirror(_ node1: TreeNode?, _ node2: TreeNode?) -> Bool {
+        if node1 == nil && node2 == nil {
+            return true
+        }
+        if node1 == nil || node2 == nil {
+            return false
+        }
+        return node1!.val == node2!.val && isMirror(node1?.left, node2?.right) && isMirror(node1?.right, node2?.left)
+    }
+    
+}
+```
+
+
+
+## 104. Maximum Depth of Binary Tree
+
+### bottom-up recursion
+
+time complexity: O(n)
+
+space complexity: O(n) worset case, average O(H) or O(logn) if the tree is completely balanced, where H is tree height
+
+```swift
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     public var val: Int
+ *     public var left: TreeNode?
+ *     public var right: TreeNode?
+ *     public init() { self.val = 0; self.left = nil; self.right = nil; }
+ *     public init(_ val: Int) { self.val = val; self.left = nil; self.right = nil; }
+ *     public init(_ val: Int, _ left: TreeNode?, _ right: TreeNode?) {
+ *         self.val = val
+ *         self.left = left
+ *         self.right = right
+ *     }
+ * }
+ */
+class Solution {
+    func maxDepth(_ root: TreeNode?) -> Int {
+        guard let root = root else { return 0 }
+        return 1 + max(maxDepth(root.left), maxDepth(root.right))
+    }
+}
+```
+
+
+
+## 102. Binary Tree Level Order Traversal
+
+### recursion
+
+time complexity: O(n)
+
+space complexity: O(n) worset case, average O(H), where H is tree height
+
+```swift
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     public var val: Int
+ *     public var left: TreeNode?
+ *     public var right: TreeNode?
+ *     public init() { self.val = 0; self.left = nil; self.right = nil; }
+ *     public init(_ val: Int) { self.val = val; self.left = nil; self.right = nil; }
+ *     public init(_ val: Int, _ left: TreeNode?, _ right: TreeNode?) {
+ *         self.val = val
+ *         self.left = left
+ *         self.right = right
+ *     }
+ * }
+ */
+class Solution {
+    var results = [[Int]]()
+    
+    func levelOrder(_ root: TreeNode?) -> [[Int]] {
+        guard let root = root else { return results }
+        tranverseBFS(root, 0)
+        return results
+    }
+    
+    func tranverseBFS(_ root: TreeNode?, _ level: Int) {
+        if results.count == level {
+            results.append([Int]())
+        }
+        
+        results[level].append(root!.val)
+        
+        if root?.left != nil {
+            tranverseBFS(root?.left, level + 1)
+        }
+        if root?.right != nil {
+            tranverseBFS(root?.right, level + 1)
+        }
+    }
+}
+```
+
+
+
 ## 145. Binary Tree Postorder Traversal
 
 time complexity: O(n)
