@@ -1,5 +1,124 @@
 # Swift-Algorithms
 
+## 297. Serialize and Deserialize Binary Tree
+
+DFS
+
+for both serialisation and deserialisation function
+
+time complexity: O(n)
+
+space complexity: O(n) 
+
+```swift
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     public var val: Int
+ *     public var left: TreeNode?
+ *     public var right: TreeNode?
+ *     public init(_ val: Int) {
+ *         self.val = val
+ *         self.left = nil
+ *         self.right = nil
+ *     }
+ * }
+ */
+
+class Codec {
+    func serialize(_ root: TreeNode?) -> String {
+        var ans = ""
+        return rserialize(root, &ans)
+    }
+    
+    private func rserialize(_ root: TreeNode?, _ str: inout String) -> String {
+        if let root = root {
+            str += String(root.val) + ","
+            str = rserialize(root.left, &str)
+            str = rserialize(root.right, &str)
+        } else { 
+            str += "nil," 
+        }
+        
+        return str
+    }
+    
+    func deserialize(_ data: String) -> TreeNode? {
+        var dataList = data.split(separator: ",").map { String($0) }
+        return rdeserialize(&dataList)
+    }
+    
+    func rdeserialize(_ data: inout [String]) -> TreeNode? {
+        if data[0] == "nil" {
+            data.removeFirst()
+            return nil
+        }
+        
+        let nodeVal = Int(data[0])
+        let root = TreeNode(nodeVal!)
+        data.removeFirst()
+        
+        root.left = rdeserialize(&data)
+        root.right = rdeserialize(&data)
+        return root
+    }
+}
+
+// Your Codec object will be instantiated and called as such:
+// var codec = Codec()
+// codec.deserialize(codec.serialize(root))
+```
+
+
+
+## 236. Lowest Common Ancestor of a Binary Tree
+
+### recursion
+
+time complexity: O(n)
+
+space complexity: O(h), h is the height of tree
+
+```swift
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     public var val: Int
+ *     public var left: TreeNode?
+ *     public var right: TreeNode?
+ *     public init(_ val: Int) {
+ *         self.val = val
+ *         self.left = nil
+ *         self.right = nil
+ *     }
+ * }
+ */
+
+class Solution {
+    var ans: TreeNode?
+    
+    func lowestCommonAncestor(_ root: TreeNode?, _ p: TreeNode?, _ q: TreeNode?) -> TreeNode? {
+        recursTree(root, p, q)
+        return ans
+    }
+    
+    func recursTree(_ root: TreeNode?, _ p: TreeNode?, _ q: TreeNode?) -> Bool {
+        guard let root = root else { return false }
+        
+        let left = recursTree(root.left, p, q)
+        let right = recursTree(root.right, p, q)
+        
+        if (left && right) || ((left || right) && (root.val == p!.val || root.val == q!.val)) {
+            ans = root
+        }
+        
+        return left || right || (root.val == p!.val || root.val == q!.val)
+    }
+}
+```
+
+
+
 ## 117. Populating Next Right Pointers in Each Node II
 
 ### Level Order Traversal
