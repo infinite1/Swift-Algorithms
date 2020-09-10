@@ -1,5 +1,509 @@
 # Swift-Algorithms
 
+## 414. Third Maximum Number
+
+### use set and delete max number
+
+time complexity: O(n)
+
+space complexity: O(n) 
+
+```swift
+class Solution {
+    func thirdMax(_ nums: [Int]) -> Int {
+        var uniqueNums = Set(nums)
+        
+        if uniqueNums.count < 3 {
+            return uniqueNums.max()!
+        }
+        
+        var maxNum = uniqueNums.max()!
+        uniqueNums.remove(maxNum)
+        maxNum = uniqueNums.max()!
+        uniqueNums.remove(maxNum)
+        
+        return uniqueNums.max()!
+    }
+}
+
+
+```
+
+
+
+## 487. Max Consecutive Ones II
+
+time complexity: O(n)
+
+space complexity: O(1) 
+
+```swift
+class Solution {
+    func findMaxConsecutiveOnes(_ nums: [Int]) -> Int {
+        var start = 0, maxLength = 0, maxOnes = 0
+        for end in 0 ..< nums.count {
+            if nums[end] == 1 {
+                maxOnes += 1
+            }
+            
+            if end - start + 1 - maxOnes > 1 {
+                if nums[start] == 1 {
+                   maxOnes -= 1 
+                }
+                start += 1
+            }
+            
+            maxLength = max(maxLength, end - start + 1)
+        }
+        return maxLength
+    }
+}
+```
+
+
+
+## 1051. Height Checker
+
+time complexity: O(nlogn)
+
+space complexity: O(n) 
+
+```swift
+class Solution {
+    func heightChecker(_ heights: [Int]) -> Int {
+        var sortedArr = heights.sorted()
+        var p1 = 0, p2 = 0, num = 0
+        while p1 < heights.count && p2 < heights.count {
+            if sortedArr[p1] != heights[p2] {
+                num += 1
+            }
+            p1 += 1
+            p2 += 1
+        }
+        return num
+    }
+}
+```
+
+
+
+## 905. Sort Array By Parity
+
+### two iteration
+
+time complexity: O(n)
+
+space complexity: O(n) 
+
+```swift
+class Solution {
+    func sortArrayByParity(_ A: [Int]) -> [Int] {
+        var arr = [Int]()
+        for i in A {
+            if i % 2 == 0 {
+                arr.append(i)
+            }
+        }
+        for i in A {
+            if i % 2 != 0 {
+                arr.append(i)
+            }
+        }
+        return arr
+    }
+}
+```
+
+
+
+## 283. Move Zeroes
+
+### two iteration
+
+第一次遍历把非0元素全部往左挪，第二次遍历把数组剩下的位置用0填充
+
+time complexity: O(n)
+
+space complexity: O(1) 
+
+```swift
+class Solution {
+    func moveZeroes(_ nums: inout [Int]) {
+        var j = 0
+        for i in 0 ..< nums.count {
+            if nums[i] != 0 {
+                nums[j] = nums[i]
+                j += 1
+            }
+        }
+        for i in j ..< nums.count {
+            nums[i] = 0
+        }
+    }
+}
+```
+
+
+
+## 1299. Replace Elements with Greatest Element on Right Side 
+
+time complexity: O(n)
+
+space complexity: O(1) 
+
+```swift
+class Solution {
+    func replaceElements(_ arr: [Int]) -> [Int] {
+        var arr = arr
+        var p = arr.count - 1, maxVal = -1
+        while p >= 0 {
+            let prev = arr[p]
+            arr[p] = maxVal
+            maxVal = max(maxVal, prev)
+            p -= 1
+        }
+        return arr
+    }
+}
+```
+
+
+
+## 941. Valid Mountain Array
+
+time complexity: O(n)
+
+space complexity: O(1) 
+
+```swift
+class Solution {
+    func validMountainArray(_ A: [Int]) -> Bool {
+        let l = A.count
+        var i = 0
+        
+        while i + 1 < l && A[i] < A[i + 1] {
+            i += 1
+        }
+        
+        // check if array is in descending or in ascending order
+        if i == 0 || i == l - 1 {
+            return false
+        }
+        
+        // if two element are the same, i won't arrive at l - 1
+        while i + 1 < l && A[i] > A[i + 1] {
+            i += 1
+        }
+        
+        return i == l - 1
+        
+    }
+}
+```
+
+
+
+## 1346. Check If N and Its Double Exist
+
+### hashtable
+
+ time complexity: O(n)
+
+space complexity: O(n) 
+
+```swift
+class Solution {
+    func checkIfExist(_ arr: [Int]) -> Bool {
+        var table = [Int: Int]()
+        
+        for i in arr {
+            if table[i * 2] != nil || (i % 2 == 0 && table[i / 2] != nil) {
+                return true
+            } else {
+                table[i] = 1
+            }
+        }
+        
+        return false
+    }
+}
+```
+
+
+
+## 26. Remove Duplicates from Sorted Array
+
+ time complexity: O(n)
+
+space complexity: O(1) 
+
+```swift
+class Solution {
+    func removeDuplicates(_ nums: inout [Int]) -> Int {
+        if nums.count == 0 { return 0 }
+        var i = 0
+        for j in 1 ..< nums.count {
+            if nums[j] != nums[i] {
+                i += 1
+                nums[i] = nums[j]
+            }
+        }
+        return i + 1
+    }
+}
+```
+
+
+
+## 27. Remove Element
+
+### two pointers
+
+需要移除的元素很多时
+
+ time complexity: O(n)
+
+space complexity: O(1) 
+
+```swift
+class Solution {
+    func removeElement(_ nums: inout [Int], _ val: Int) -> Int {
+        var i = 0, j = 0
+        for j in 0 ..< nums.count {
+            if nums[j] != val {
+                nums[i] = nums[j]
+                i += 1
+            }
+        }
+        return i
+    }
+}
+```
+
+
+
+## 88. Merge Sorted Array
+
+### two pointer from beginning
+
+time complexity: O(m + n)
+
+space complexity: O(m) 
+
+```swift
+class Solution {
+    func merge(_ nums1: inout [Int], _ m: Int, _ nums2: [Int], _ n: Int) {
+        let nums1Copy = nums1[0..<m]
+        nums1 = []
+        var p1 = 0
+        var p2 = 0
+        while p1 < m && p2 < n {
+            if nums1Copy[p1] < nums2[p2] {
+                nums1.append(nums1Copy[p1])
+                p1 += 1
+            } else {
+                nums1.append(nums2[p2])
+                p2 += 1
+            }
+        }
+        
+        if p1 < m {
+            nums1 += nums1Copy[p1...]
+        }
+        if p2 < n {
+            nums1 += nums2[p2...]
+        }
+    }
+}
+
+
+```
+
+### two pointer from end
+
+time complexity: O(n + m)
+
+space complexity: O(1) 
+
+```swift
+class Solution {
+    func merge(_ nums1: inout [Int], _ m: Int, _ nums2: [Int], _ n: Int) {
+        var p1 = m - 1, p2 = n - 1
+        var p = nums1.count - 1
+        while p1 >= 0 && p2 >= 0 {
+            if nums1[p1] > nums2[p2] {
+                nums1[p] = nums1[p1]
+                p1 -= 1
+            } else {
+                nums1[p] = nums2[p2]
+                p2 -= 1
+            }
+            p -= 1
+        }
+        nums1[...p2] = nums2[...p2]
+    }
+}
+
+
+```
+
+
+
+## 1089. Duplicate Zeros
+
+两次遍历，第一次遍历找到多少个元素要被丢弃，第二次遍历从后往前把元素向后移
+
+time complexity: O(n)
+
+space complexity: O(1) 
+
+```swift
+class Solution {
+    func duplicateZeros(_ arr: inout [Int]) {
+        var possibleDuplicate = 0
+        var length = arr.count - 1
+        for left in 0 ..< arr.count {
+            if left > length - possibleDuplicate {
+                break
+            }
+            
+            if arr[left] == 0 {
+                if left == length - possibleDuplicate {
+                    arr[length] = 0
+                    length -= 1
+                    break
+                }
+                possibleDuplicate += 1
+            }
+        }
+        
+        var last = length - possibleDuplicate
+        
+        for i in stride(from: last, to: -1, by: -1) {
+            if arr[i] == 0 {
+                arr[i + possibleDuplicate] = 0
+                possibleDuplicate -= 1
+                arr[i + possibleDuplicate] = 0
+            } else {
+                arr[i + possibleDuplicate] = arr[i]
+            }
+        }
+    }
+}
+```
+
+
+
+## 977. Squares of a Sorted Array
+
+### sorting
+
+use built-in sort function
+
+time complexity: O(nlogn)
+
+space complexity: O(n) 
+
+### two pointer
+
+time complexity: O(n)
+
+space complexity: O(n) 
+
+```swift
+class Solution {
+    func sortedSquares(_ A: [Int]) -> [Int] {
+        var arr = [Int]()
+        
+        var j = 0
+        while j < A.count && A[j] < 0 {
+            j += 1
+        }
+        var i = j - 1
+        
+        while i >= 0 && j < A.count {
+            let val1 = A[i] * A[i]
+            let val2 = A[j] * A[j]
+            if val1 < val2 {
+                arr.append(val1)
+                i -= 1
+            } else {
+                arr.append(val2)
+                j += 1
+            }
+        }
+        
+        while i >= 0 {
+            arr.append(A[i] * A[i])
+            i -= 1
+        }
+        
+        while j < A.count {
+            arr.append(A[j] * A[j])
+            j += 1
+        }
+        
+        return arr
+    }
+}
+```
+
+
+
+## 1295. Find Numbers with Even Number of Digits
+
+time complexity: O(n)
+
+space complexity: O(1) 
+
+```swift
+class Solution {
+    func findNumbers(_ nums: [Int]) -> Int {
+        var digitsCount = nums.map { String($0).count }
+        var count = 0
+        for i in digitsCount {
+            if i % 2 == 0 {
+                count += 1
+            }
+        }
+        return count
+    }
+}
+```
+
+
+
+## 485. Max Consecutive Ones
+
+在for loop中无法更新最后一次的maxCount，所以在循环结束后需要手动更新一次maxCount
+
+time complexity: O(n)
+
+space complexity: O(1) 
+
+```swift
+class Solution {
+    func findMaxConsecutiveOnes(_ nums: [Int]) -> Int {
+        var start = 0
+        var maxCount = 0
+        var count = 0
+        for end in 0 ..< nums.count {
+            if nums[end] == 1 {
+                count += 1
+            } else {
+                start = end + 1
+                maxCount = max(maxCount, count)
+                count = 0
+            }
+        }
+        
+        return max(maxCount, count)
+    }
+}
+```
+
+
+
 ## 297. Serialize and Deserialize Binary Tree
 
 DFS
