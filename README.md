@@ -1,5 +1,200 @@
 # Swift-Algorithms
 
+## 237. Delete Node in a Linked List
+
+time complexity: O(1)
+
+space complexity: O(1) 
+
+```swift
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     public var val: Int
+ *     public var next: ListNode?
+ *     public init(_ val: Int) {
+ *         self.val = val
+ *         self.next = nil
+ *     }
+ * }
+ */
+
+class Solution {
+    func deleteNode(_ node: ListNode?) {
+        node!.val = (node?.next)!.val
+        node?.next = node?.next?.next
+    }
+}
+```
+
+
+
+## 231. Power of Two
+
+### dividing 2 approach
+
+time complexity: O(log(n))
+
+space complexity: O(1) 
+
+```swift
+class Solution {
+    func isPowerOfTwo(_ n: Int) -> Bool {
+        var n = n
+        if n == 0 { return false }
+        while n % 2 == 0 {
+            n /= 2
+        }
+        return n == 1
+    }
+}
+```
+
+
+
+## 169. Majority Element
+
+### hash table approach
+
+time complexity: O(n)
+
+space complexity: O(n) 
+
+```swift
+class Solution {
+    func majorityElement(_ nums: [Int]) -> Int {
+        var table = [Int: Int]()
+        for i in nums {
+            if table[i] == nil {
+                table[i] = 0
+            }
+            table[i]! += 1
+        }
+
+        for (key, value) in table {
+            if value > nums.count / 2 {
+                return key
+            }
+        }
+
+        return -1
+
+    }
+}
+```
+
+
+
+## 136. Single Number
+
+### XOR approach
+
+time complexity: O(n)
+
+space complexity: O(1) 
+
+```swift
+class Solution {
+    func singleNumber(_ nums: [Int]) -> Int {
+        var res = 0
+        for i in nums {
+            res ^= i
+        }
+        return res
+    }
+}
+```
+
+
+
+## 9. Palindrome Number
+
+time complexity: O(log(x))
+
+space complexity: O(n) 
+
+```swift
+class Solution {
+    func isPalindrome(_ x: Int) -> Bool {
+        if x < 0 { return false }
+        var rev = 0, X = x 
+        while X != 0 {
+            let pop = X % 10
+            X /= 10
+            rev = rev * 10 + pop
+        }
+
+        return rev == x
+    }
+}
+```
+
+
+
+## 7. Reverse Integer
+
+check overflow beforehand because `res = res * 10 + pop` could cause overflow
+
+time complexity: O(log(x))
+
+space complexity: O(n) 
+
+```swift
+class Solution {
+    func reverse(_ x: Int) -> Int {
+        var res = 0, X = x
+        while X != 0 {
+            let pop = X % 10
+            X /= 10
+
+            if res > Int32.max / 10 || (res == Int32.max / 10 && pop > Int32.max % 10) {
+                return 0
+            }
+
+            if res < Int32.min / 10 || (res == Int32.min / 10 && pop < Int32.min % 10) {
+                return 0
+            } 
+            res = res * 10 + pop
+        }
+        return res
+    }
+}
+```
+
+
+
+## 448. Find All Numbers Disappeared in an Array
+
+### hash map approach
+
+time complexity: O(n)
+
+space complexity: O(n) 
+
+```swift
+class Solution {
+    func findDisappearedNumbers(_ nums: [Int]) -> [Int] {
+        if nums.isEmpty { return [] }
+        
+        var table = [Int: Int]()
+        var results = [Int]()
+        
+        for i in nums {
+            table[i] = 1
+        }
+        for i in 0 ..< nums.count {
+            let n = i + 1
+            if table[n] != 1 {
+                results.append(n)
+            }
+        }
+        return results
+    }
+}
+```
+
+
+
 ## 414. Third Maximum Number
 
 ### use set and delete max number
@@ -1950,6 +2145,41 @@ class Solution {
     }
 }
 ```
+
+### iterative approach
+
+time complexity: O(n)
+
+space complexity: O(1) 
+
+```swift
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     public var val: Int
+ *     public var next: ListNode?
+ *     public init(_ val: Int) {
+ *         self.val = val
+ *         self.next = nil
+ *     }
+ * }
+ */
+class Solution {
+    func reverseList(_ head: ListNode?) -> ListNode? {
+        var prev: ListNode? = nil
+        var cur = head
+        while cur != nil {
+            let temp = cur?.next
+            cur?.next = prev
+            prev = cur
+            cur = temp
+        }
+        return prev
+    }
+}
+```
+
+
 
 ## 203. Remove Linked List Elements
 
