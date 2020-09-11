@@ -1,5 +1,78 @@
 # Swift-Algorithms
 
+## 110. Balanced Binary Tree
+
+### top-down recursion
+
+time complexity: O(n^2), height会被重复调用因此耗时较高
+
+space complexity: O(h) 
+
+```swift
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     public var val: Int
+ *     public var left: TreeNode?
+ *     public var right: TreeNode?
+ *     public init(_ val: Int) {
+ *         self.val = val
+ *         self.left = nil
+ *         self.right = nil
+ *     }
+ * }
+ */
+class Solution {
+    func isBalanced(_ root: TreeNode?) -> Bool {
+        guard let root = root else { return true }
+        return (abs(getHeight(root.left) - getHeight(root.right)) <= 1) && isBalanced(root.left) && isBalanced(root.right)
+    }
+
+    func getHeight(_ root: TreeNode?) -> Int {
+        guard let root = root else { return 0 }
+        return 1 + max(getHeight(root.left), getHeight(root.right))
+    }
+}
+```
+
+### bottom-up recursion
+
+time complexity: O(n)
+
+space complexity: O(h) 
+
+```swift
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     public var val: Int
+ *     public var left: TreeNode?
+ *     public var right: TreeNode?
+ *     public init(_ val: Int) {
+ *         self.val = val
+ *         self.left = nil
+ *         self.right = nil
+ *     }
+ * }
+ */
+class Solution {
+    func isBalanced(_ root: TreeNode?) -> Bool {
+        return height(root) >= 0
+    }
+
+    func height(_ root: TreeNode?) -> Int {
+        guard let root = root else { return 0 }
+        let left = height(root.left), right = height(root.right)
+        if left == -1 || right == -1 || abs(left - right) > 1 {
+            return -1
+        }
+        return 1 + max(left, right)
+    }
+}
+```
+
+
+
 ## 237. Delete Node in a Linked List
 
 time complexity: O(1)
@@ -1191,7 +1264,7 @@ class Solution {
 
 ## 104. Maximum Depth of Binary Tree
 
-### bottom-up recursion
+### Recursion
 
 time complexity: O(n)
 
@@ -1217,6 +1290,51 @@ class Solution {
     func maxDepth(_ root: TreeNode?) -> Int {
         guard let root = root else { return 0 }
         return 1 + max(maxDepth(root.left), maxDepth(root.right))
+    }
+}
+```
+
+### BFS
+
+time complexity: O(n)
+
+space complexity: O(s). where s is the maximum elements in a level
+
+```swift
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     public var val: Int
+ *     public var left: TreeNode?
+ *     public var right: TreeNode?
+ *     public init(_ val: Int) {
+ *         self.val = val
+ *         self.left = nil
+ *         self.right = nil
+ *     }
+ * }
+ */
+class Solution {
+    func maxDepth(_ root: TreeNode?) -> Int {
+        guard let root = root else { return 0 }
+        var queue = [TreeNode?]()
+        queue.append(root)
+        var depth = 0
+        while !queue.isEmpty {
+            var i = queue.count
+            while i > 0 {
+                let node = queue.removeFirst()
+                if let left = node?.left {
+                    queue.append(left)
+                }
+                if let right = node?.right {
+                    queue.append(right)
+                }
+                i -= 1
+            }
+            depth += 1
+        }
+        return depth
     }
 }
 ```
