@@ -1,5 +1,49 @@
 # Swift-Algorithms
 
+## 124. Binary Tree Maximum Path Sum
+
+time complexity: O(n)
+
+space complexity: O(h)
+
+```swift
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     public var val: Int
+ *     public var left: TreeNode?
+ *     public var right: TreeNode?
+ *     public init(_ val: Int) {
+ *         self.val = val
+ *         self.left = nil
+ *         self.right = nil
+ *     }
+ * }
+ */
+class Solution {
+    var minSum = Int.min
+
+    func maxPathSum(_ root: TreeNode?) -> Int {
+        maxGain(root)
+        return minSum
+    }
+
+    func maxGain(_ root: TreeNode?) -> Int {
+        guard let root = root else { return 0 }
+
+        let left = max(maxGain(root.left), 0)
+        let right = max(maxGain(root.right), 0)
+
+        let sum = left + right + root.val
+        minSum = max(minSum, sum)
+
+        return root.val + max(left, right)
+    }
+}
+```
+
+
+
 ## 110. Balanced Binary Tree
 
 ### top-down recursion
@@ -849,7 +893,7 @@ class Codec {
 
 time complexity: O(n)
 
-space complexity: O(h), h is the height of tree
+space complexity: O(h), h is the height of tree, worst case O(n)
 
 ```swift
 /**
@@ -885,6 +929,61 @@ class Solution {
         }
         
         return left || right || (root.val == p!.val || root.val == q!.val)
+    }
+}
+```
+
+### use hashtable to store root node
+
+time complexity: O(n)
+
+space complexity: O(n)
+
+```swift
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     public var val: Int
+ *     public var left: TreeNode?
+ *     public var right: TreeNode?
+ *     public init(_ val: Int) {
+ *         self.val = val
+ *         self.left = nil
+ *         self.right = nil
+ *     }
+ * }
+ */
+
+class Solution {
+    var parents = [Int: TreeNode?]()
+    var visited = [Int]()
+
+    func lowestCommonAncestor(_ root: TreeNode?, _ p: TreeNode?, _ q: TreeNode?) -> TreeNode? {
+        dfs(root)
+        var p = p, q = q
+        while p != nil {
+            visited.append(p!.val)
+            p = parents[p!.val] ?? nil
+        }
+
+        while q != nil {
+            if visited.contains(q!.val) {
+                return q
+            }
+            q = parents[q!.val] ?? nil
+        }
+        return nil
+    }
+
+    private func dfs(_ root: TreeNode?) {
+        if let left = root?.left {
+            parents[left.val] = root
+            dfs(left)
+        }
+        if let right = root?.right {
+            parents[right.val] = root
+            dfs(right)
+        }
     }
 }
 ```
