@@ -49,7 +49,6 @@ class Solution {
 ### top-down recursion
 
 time complexity: O(n^2), height会被重复调用因此耗时较高
-
 space complexity: O(h) 
 
 ```swift
@@ -457,7 +456,7 @@ class Solution {
 
 
 
-## 1299. Replace Elements with Greatest Element on Right Side 
+## 1299. Replace Elements with Greatest Element on Right Side
 
 time complexity: O(n)
 
@@ -1443,11 +1442,8 @@ class Solution {
 ## 102. Binary Tree Level Order Traversal
 
 ### recursion
-
 time complexity: O(n)
-
-space complexity: O(n) worset case, average O(H), where H is tree height
-
+space complexity: O(n)
 ```swift
 /**
  * Definition for a binary tree node.
@@ -1455,43 +1451,81 @@ space complexity: O(n) worset case, average O(H), where H is tree height
  *     public var val: Int
  *     public var left: TreeNode?
  *     public var right: TreeNode?
- *     public init() { self.val = 0; self.left = nil; self.right = nil; }
- *     public init(_ val: Int) { self.val = val; self.left = nil; self.right = nil; }
- *     public init(_ val: Int, _ left: TreeNode?, _ right: TreeNode?) {
+ *     public init(_ val: Int) {
  *         self.val = val
- *         self.left = left
- *         self.right = right
+ *         self.left = nil
+ *         self.right = nil
  *     }
  * }
  */
 class Solution {
     var results = [[Int]]()
-    
+
     func levelOrder(_ root: TreeNode?) -> [[Int]] {
         guard let root = root else { return results }
-        tranverseBFS(root, 0)
+        traverseTree(root, 0)
         return results
     }
-    
-    func tranverseBFS(_ root: TreeNode?, _ level: Int) {
+
+    func traverseTree(_ root: TreeNode, _ level: Int) {
         if results.count == level {
             results.append([Int]())
         }
-        
-        results[level].append(root!.val)
-        
-        if root?.left != nil {
-            tranverseBFS(root?.left, level + 1)
+
+        results[level].append(root.val)
+
+        if let left = root.left {
+            traverseTree(left, level + 1)
         }
-        if root?.right != nil {
-            tranverseBFS(root?.right, level + 1)
+        if let right = root.right {
+            traverseTree(right, level + 1)
         }
     }
 }
 ```
-
-
-
+### iteration
+```swift
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     public var val: Int
+ *     public var left: TreeNode?
+ *     public var right: TreeNode?
+ *     public init(_ val: Int) {
+ *         self.val = val
+ *         self.left = nil
+ *         self.right = nil
+ *     }
+ * }
+ */
+class Solution {
+    func levelOrder(_ root: TreeNode?) -> [[Int]] {
+        guard let root = root else { return [] }
+        var queue = [TreeNode?]()
+        var results = [[Int]]()
+        queue.append(root)
+        while !queue.isEmpty {
+            var size = queue.count
+            var levelVal = [Int]()
+            while size > 0 {
+                let node = queue.removeFirst()
+                levelVal.append(node!.val)
+                if let left = node?.left {
+                    queue.append(left)
+                }
+                if let right = node?.right {
+                    queue.append(right)
+                }
+                size -= 1
+            }
+            results.append(levelVal)
+        }
+        return results
+    }
+}
+```
+time complexity: O(n)
+space complexity: O(n)
 ## 145. Binary Tree Postorder Traversal
 
 time complexity: O(n)
