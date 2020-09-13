@@ -2,9 +2,8 @@
 
 ## 107. Binary Tree Level Order Traversal II
 ### recursion
-time complexity: O(n)
-
-space complexity: O(h)
+- time complexity: O(n)
+- space complexity: O(h)
 ```swift
 /**
  * Definition for a binary tree node.
@@ -45,8 +44,8 @@ class Solution {
 }
 ```
 ### Iteration
-time complexity: O(n)
-space complexity: O(n)
+- time complexity: O(n)
+- space complexity: O(n)
 ```swift
 /**
  * Definition for a binary tree node.
