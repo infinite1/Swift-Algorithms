@@ -1,6 +1,7 @@
 # Swift-Algorithms
 
 ## 107. Binary Tree Level Order Traversal II
+### recursion
 time complexity: O(n)
 
 space complexity: O(h)
@@ -43,7 +44,52 @@ class Solution {
     }
 }
 ```
+### Iteration
+time complexity: O(n)
+space complexity: O(n)
+```swift
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     public var val: Int
+ *     public var left: TreeNode?
+ *     public var right: TreeNode?
+ *     public init(_ val: Int) {
+ *         self.val = val
+ *         self.left = nil
+ *         self.right = nil
+ *     }
+ * }
+ */
+class Solution {
 
+    func levelOrderBottom(_ root: TreeNode?) -> [[Int]] {
+        var results = [[Int]]()
+        guard let root = root else { return results }
+        var queue = [TreeNode]()
+        queue.append(root)
+
+        while !queue.isEmpty {
+            var size = queue.count
+            var levelVal = [Int]()
+            while size > 0 {
+                let node = queue.removeFirst()
+                levelVal.append(node.val)
+                if let left = node.left {
+                    queue.append(left)
+                }
+                if let right = node.right {
+                    queue.append(right)
+                }
+                size -= 1
+            }
+            results.append(levelVal)
+        }
+
+        return results.reversed()
+    }
+}
+```
 ## 124. Binary Tree Maximum Path Sum
 
 time complexity: O(n)
