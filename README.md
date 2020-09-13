@@ -1,5 +1,102 @@
 # Swift-Algorithms
+## 103. Binary Tree Zigzag Level Order Traversal
+### BFS
+- time complexity: O(n)
+- space complexity: O(n)
+```swift
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     public var val: Int
+ *     public var left: TreeNode?
+ *     public var right: TreeNode?
+ *     public init(_ val: Int) {
+ *         self.val = val
+ *         self.left = nil
+ *         self.right = nil
+ *     }
+ * }
+ */
+class Solution {
+    func zigzagLevelOrder(_ root: TreeNode?) -> [[Int]] {
+        var results = [[Int]]()
+        guard let root = root else { return results }
+        var queue = [TreeNode]()
+        queue.append(root)
+        var flag = true
 
+        while !queue.isEmpty {
+            var levelVal = [Int]()
+            var size = queue.count
+            while size > 0 {
+                let node = queue.removeFirst()
+                if flag {
+                    levelVal.append(node.val)
+                } else {
+                    levelVal.insert(node.val, at: 0)
+                }
+                if let left = node.left {
+                    queue.append(left)
+                }
+                if let right = node.right {
+                    queue.append(right)
+                }
+                size -= 1
+            }
+            results.append(levelVal)
+            flag = !flag
+        }
+
+        return results
+    }
+}
+
+```
+### DFS
+- time complexity: O(n)
+- space complexity: O(h)
+```swift
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     public var val: Int
+ *     public var left: TreeNode?
+ *     public var right: TreeNode?
+ *     public init(_ val: Int) {
+ *         self.val = val
+ *         self.left = nil
+ *         self.right = nil
+ *     }
+ * }
+ */
+class Solution {
+    func zigzagLevelOrder(_ root: TreeNode?) -> [[Int]] {
+        guard let root = root else { return [] }
+        var results = [[Int]]()
+        dfs(root, 0, &results)
+        return results
+    }
+
+    func dfs(_ root: TreeNode, _ level: Int, _ results: inout [[Int]]) {
+        if results.count == level {
+            results.append([root.val])
+        } else {
+            if level % 2 != 0 {
+                results[level].insert(root.val, at: 0)
+            } else {
+                results[level].append(root.val)
+            }
+        }
+
+        if let left = root.left {
+            dfs(left, level + 1, &results)
+        }
+        if let right = root.right {
+            dfs(right, level + 1, &results)
+        }
+    }
+}
+```
 ## 107. Binary Tree Level Order Traversal II
 ### recursion
 - time complexity: O(n)
