@@ -1,4 +1,227 @@
 # Swift-Algorithms
+## 82. Remove Duplicates from Sorted List II
+遍历重复元素时注意确保`cur?.next != nil`来应对如[1,1]这样的corner case
+- time complexity: O(n)
+- space complexity: O(1)
+```swift
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     public var val: Int
+ *     public var next: ListNode?
+ *     public init(_ val: Int) {
+ *         self.val = val
+ *         self.next = nil
+ *     }
+ * }
+ */
+class Solution {
+    func deleteDuplicates(_ head: ListNode?) -> ListNode? {
+        var dummyHead: ListNode? = ListNode(0)
+        dummyHead?.next = head
+        var cur = head, prev = dummyHead
+        while cur?.next != nil {
+            if (prev?.next)!.val != (cur?.next)!.val {
+                prev = cur
+                cur = cur?.next
+            } else {
+                while cur?.next != nil && (prev?.next)!.val == (cur?.next)!.val {
+                    cur = cur?.next
+                }
+                prev?.next = cur?.next
+                cur = cur?.next
+            }
+        }
+        return dummyHead?.next
+    }
+}
+```
+## 83. Remove Duplicates from Sorted List
+- time complexity: O(N)
+- space complexity: O(1)
+```swift
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     public var val: Int
+ *     public var next: ListNode?
+ *     public init(_ val: Int) {
+ *         self.val = val
+ *         self.next = nil
+ *     }
+ * }
+ */
+class Solution {
+    func deleteDuplicates(_ head: ListNode?) -> ListNode? {
+        var cur = head
+        while cur?.next != nil {
+            if cur!.val == (cur?.next)!.val {
+                cur?.next = cur?.next?.next
+            } else {
+                cur = cur?.next
+            }
+            
+        }
+        return head
+    }
+}
+```
+## 701. Insert into a Binary Search Tree
+### Recursion
+- time complexity: O(H), average O(logN), worst O(N)
+- space complexity: O(H), average O(logN), worst O(N)
+```swift
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     public var val: Int
+ *     public var left: TreeNode?
+ *     public var right: TreeNode?
+ *     public init() { self.val = 0; self.left = nil; self.right = nil; }
+ *     public init(_ val: Int) { self.val = val; self.left = nil; self.right = nil; }
+ *     public init(_ val: Int, _ left: TreeNode?, _ right: TreeNode?) {
+ *         self.val = val
+ *         self.left = left
+ *         self.right = right
+ *     }
+ * }
+ */
+class Solution {
+    func insertIntoBST(_ root: TreeNode?, _ val: Int) -> TreeNode? {
+        guard let root = root else { return TreeNode(val) }
+
+        if val > root.val {
+            root.right = insertIntoBST(root.right, val)
+        } else {
+            root.left = insertIntoBST(root.left, val)
+        }
+
+        return root
+    }
+}
+```
+### Iteration
+- time complexity: O(H), average O(logN), worst O(N)
+- space complexity: O(1)
+```swift
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     public var val: Int
+ *     public var left: TreeNode?
+ *     public var right: TreeNode?
+ *     public init() { self.val = 0; self.left = nil; self.right = nil; }
+ *     public init(_ val: Int) { self.val = val; self.left = nil; self.right = nil; }
+ *     public init(_ val: Int, _ left: TreeNode?, _ right: TreeNode?) {
+ *         self.val = val
+ *         self.left = left
+ *         self.right = right
+ *     }
+ * }
+ */
+class Solution {
+    func insertIntoBST(_ root: TreeNode?, _ val: Int) -> TreeNode? {
+        var cur = root
+        let toAdd = TreeNode(val)
+
+        while cur != nil {
+            if val > cur!.val {
+                if let right = cur?.right {
+                    cur = right
+                } else {
+                    cur?.right = toAdd
+                    return root
+                }
+            } else {
+                if let left = cur?.left {
+                    cur = left
+                } else {
+                    cur?.left = toAdd
+                    return root
+                }
+            }
+        }
+
+        return toAdd
+    }
+}
+```
+## 98. Validate Binary Search Tree
+### Recursion
+- time complexity: O(n)
+- space complexity: O(n)
+```swift
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     public var val: Int
+ *     public var left: TreeNode?
+ *     public var right: TreeNode?
+ *     public init(_ val: Int) {
+ *         self.val = val
+ *         self.left = nil
+ *         self.right = nil
+ *     }
+ * }
+ */
+class Solution {
+    func isValidBST(_ root: TreeNode?) -> Bool {
+        return helper(root, Int.min, Int.max)
+    }
+
+    func helper(_ root: TreeNode?, _ low: Int, _ high: Int) -> Bool {
+        guard let root = root else { return true }
+
+        if root.val <= low || root.val >= high {
+            return false
+        }
+
+        return helper(root.left, low, root.val) && helper(root.right, root.val, high)
+    }
+}
+```
+### Inorder iteration
+```swift
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     public var val: Int
+ *     public var left: TreeNode?
+ *     public var right: TreeNode?
+ *     public init(_ val: Int) {
+ *         self.val = val
+ *         self.left = nil
+ *         self.right = nil
+ *     }
+ * }
+ */
+class Solution {
+    func isValidBST(_ root: TreeNode?) -> Bool {
+        var root = root 
+
+        var stack = [TreeNode?]()
+        var inOrderPrev = Int.min
+
+        while !stack.isEmpty || root != nil {
+            while root != nil {
+                stack.append(root)
+                root = root?.left
+            }
+
+            let node = stack.removeLast()
+            if node!.val <= inOrderPrev {
+                return false
+            }
+            inOrderPrev = node!.val
+            root = node?.right
+        }
+
+        return true
+    }
+}
+```
+- time complexity: O(n)
+- space complexity: O(n)
 ## 103. Binary Tree Zigzag Level Order Traversal
 ### BFS
 - time complexity: O(n)
@@ -2558,44 +2781,10 @@ class Solution {
 ```
 
 ## 206. Reverse Linked List
-
-### recursive approach
-
+### Recursion
 从head开始，将后面的链表看作已经排列好的链表，然后与head反转顺序。*每次递归调用后返回的都是链表的最后一个节点，或者说是反转链表的head*。
-
-time complexity: O(n)
-
-space complexity: O(n)
-
-```swift
-/**
- * Definition for singly-linked list.
- * public class ListNode {
- *     public var val: Int
- *     public var next: ListNode?
- *     public init() { self.val = 0; self.next = nil; }
- *     public init(_ val: Int) { self.val = val; self.next = nil; }
- *     public init(_ val: Int, _ next: ListNode?) { self.val = val; self.next = next; }
- * }
- */
-class Solution {
-    func reverseList(_ head: ListNode?) -> ListNode? {
-        if head == nil || head?.next == nil { return head }
-        var cur = head
-        var node = reverseList(cur?.next)
-        cur?.next?.next = cur
-        cur?.next = nil
-        return node
-    }
-}
-```
-
-### iterative approach
-
-time complexity: O(n)
-
-space complexity: O(1) 
-
+- time complexity: O(N)
+- space complexity: O(N)
 ```swift
 /**
  * Definition for singly-linked list.
@@ -2610,21 +2799,51 @@ space complexity: O(1)
  */
 class Solution {
     func reverseList(_ head: ListNode?) -> ListNode? {
-        var prev: ListNode? = nil
-        var cur = head
+        if head == nil || head?.next == nil {
+            return head
+        }
+
+        var newHead = reverseList(head?.next)
+        head?.next?.next = head
+        head?.next = nil
+
+        return newHead
+    }
+}
+```
+### Iteration
+- time complexity: O(N)
+- space complexity: O(1) 
+```swift
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     public var val: Int
+ *     public var next: ListNode?
+ *     public init(_ val: Int) {
+ *         self.val = val
+ *         self.next = nil
+ *     }
+ * }
+ */
+class Solution {
+    func reverseList(_ head: ListNode?) -> ListNode? {
+        if head == nil || head?.next == nil {
+            return head
+        }
+
+        var prev: ListNode? = nil, cur = head
         while cur != nil {
             let temp = cur?.next
             cur?.next = prev
             prev = cur
             cur = temp
         }
+
         return prev
     }
 }
 ```
-
-
-
 ## 203. Remove Linked List Elements
 
 在head前添加一个伪head，这样的话可以避免讨论删除的数刚好在头部的corner case
