@@ -1,4 +1,115 @@
 # Swift-Algorithms
+## 92. Reverse Linked List II
+### Iteration
+需要记录四个节点的位置，prev，cur，con和tail，*连接时需要考虑到链表的head被完全反转的corner case如([3, 5], 1, 2)这样的*。
+- time complexity: O(N)
+- space complexity: O(1)
+```swift
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     public var val: Int
+ *     public var next: ListNode?
+ *     public init(_ val: Int) {
+ *         self.val = val
+ *         self.next = nil
+ *     }
+ * }
+ */
+class Solution {
+    func reverseBetween(_ head: ListNode?, _ m: Int, _ n: Int) -> ListNode? {
+        if head == nil || head?.next == nil {
+            return head
+        }
+        
+        // find start of reverse list
+        var mIndex = m
+        var prev: ListNode? = nil, cur = head
+        while mIndex > 1 {
+            prev = cur
+            cur = cur?.next
+            mIndex -= 1
+        }
+        let con = prev, tail = cur
+
+        // reverse list
+        var length = n - m + 1
+        while length > 0 {
+            let temp = cur?.next
+            cur?.next = prev
+            prev = cur
+            cur = temp
+            length -= 1
+        }
+
+        // connect reversed list and other parts
+        tail?.next = cur
+        if con == nil {   
+            return prev
+        } else {  
+            con?.next = prev
+            return head
+        }   
+    }
+}
+```
+### Recursion + Backtracking
+回溯是这个方法最难理解的点，关键在于newRight这个变量为局部变量，只存在于每一次的递归调用中，因此回溯时才能模拟右指针向左移动
+- time complexity: O(N)
+- space complexity: O(N)
+```swift
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     public var val: Int
+ *     public var next: ListNode?
+ *     public init(_ val: Int) {
+ *         self.val = val
+ *         self.next = nil
+ *     }
+ * }
+ */
+class Solution {
+    var left: ListNode?
+    var isStop = false
+
+    func reverseBetween(_ head: ListNode?, _ m: Int, _ n: Int) -> ListNode? {
+        left = head
+        recurse(head, m, n)
+        return head
+    }
+
+    func recurse(_ right: ListNode?, _ m: Int, _ n: Int) {
+        // stop when right pointer reaches nth node
+        if n == 1 {
+            return
+        }
+        
+        var newRight = right?.next
+
+        // stop when left pointer reaches mth node
+        if m > 1 {
+            left = left?.next
+        }
+
+        recurse(newRight, m - 1, n - 1)
+
+        // check if backtracking go beyond left pointer
+        if left === newRight || newRight?.next === left {
+            isStop = true
+        }
+
+        // swap left and right pointer value
+        if !isStop {
+            let tempVal = newRight!.val
+            newRight!.val = left!.val
+            left!.val = tempVal
+            // move left pointer forward, right pointer will move back with backtracking
+            left = left?.next
+        }
+    }
+}
+```
 ## 82. Remove Duplicates from Sorted List II
 遍历重复元素时注意确保`cur?.next != nil`来应对如[1,1]这样的corner case
 - time complexity: O(n)
