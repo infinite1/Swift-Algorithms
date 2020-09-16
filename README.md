@@ -1,4 +1,46 @@
 # Swift-Algorithms
+## 86. Partition List
+将链表分成比x小的和比x大的两个链表，再连接起来。*当头节点不确定时，使用dummyHead*
+- time complexity: O(N)
+- space complexity: O(1)
+```swift
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     public var val: Int
+ *     public var next: ListNode?
+ *     public init(_ val: Int) {
+ *         self.val = val
+ *         self.next = nil
+ *     }
+ * }
+ */
+class Solution {
+    func partition(_ head: ListNode?, _ x: Int) -> ListNode? {
+        var before: ListNode? = ListNode(0), after: ListNode? = ListNode(0)
+        var p1 = before, p2 = after
+        var cur = head
+        while cur != nil {
+            let next = cur?.next
+            if cur!.val < x {
+                p1?.next = cur
+                cur?.next = nil
+                p1 = p1?.next
+            } else {
+                p2?.next = cur
+                cur?.next = nil
+                p2 = p2?.next
+            }
+            cur = next
+        }
+        // connect before and after lists
+        p1?.next = after?.next
+
+        return before?.next
+
+    }
+}
+```
 ## 92. Reverse Linked List II
 ### Iteration
 需要记录四个节点的位置，prev，cur，con和tail，*连接时需要考虑到链表的head被完全反转的corner case如([3, 5], 1, 2)这样的*。
@@ -3083,15 +3125,9 @@ class Solution {
 ```
 
 ## 21. Merge Two Sorted Lists
-
-### Iteration Approach
-
-使用伪head节点来方便返回head
-
-time complexity: O(m+n)
-
-space complexity: O(1)
-
+### Recursion
+- time complexity: O(M+N)
+- space complexity: O(M+N)
 ```swift
 /**
  * Definition for singly-linked list.
@@ -3104,25 +3140,61 @@ space complexity: O(1)
  * }
  */
 class Solution {
-    func mergeTwoLists(_ l1: ListNode?, _ l2: ListNode?) -> ListNode? { 
-        var p1 = l1, p2 = l2
-        var pesudoHead = ListNode(0)
-        var prev = pesudoHead
-        while let cur1 = p1, let cur2 = p2 {
-            let val1 = cur1.val, val2 = cur2.val
-            if val1 <= val2 {
-                prev.next = cur1
-                p1 = cur1.next
-            } else {
-                prev.next = p2
-                p2 = cur2.next
-            }
-            prev = prev.next!
+    func mergeTwoLists(_ l1: ListNode?, _ l2: ListNode?) -> ListNode? {
+        if l1 == nil {
+            return l2
+        } else if l2 == nil {
+            return l1
+        } else if l1!.val < l2!.val {
+            l1?.next = mergeTwoLists(l1?.next, l2)
+            return l1
+        } else {
+            l2?.next = mergeTwoLists(l2?.next, l1)
+            return l2
         }
-        
-        prev.next = p1 ?? p2
-        
-        return pesudoHead.next
+    }
+}
+```
+### Iteration
+使用伪head节点来方便返回head
+- time complexity: O(M+N)
+- space complexity: O(1)
+```swift
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     public var val: Int
+ *     public var next: ListNode?
+ *     public init() { self.val = 0; self.next = nil; }
+ *     public init(_ val: Int) { self.val = val; self.next = nil; }
+ *     public init(_ val: Int, _ next: ListNode?) { self.val = val; self.next = next; }
+ * }
+ */
+class Solution {
+    func mergeTwoLists(_ l1: ListNode?, _ l2: ListNode?) -> ListNode? {
+        var dummyHead: ListNode? = ListNode(0), p1 = l1, p2 = l2, prev = dummyHead
+
+        while p1 != nil && p2 != nil {
+            if p1!.val < p2!.val {
+                prev?.next = p1
+                prev = p1
+                p1 = p1?.next
+            } else {
+                prev?.next = p2
+                prev = p2
+                p2 = p2?.next
+            }
+        }
+
+        // connect remaining nodes
+        if p1 != nil {
+            prev?.next = p1
+        }
+        if p2 != nil {
+            prev?.next = p2
+        }
+
+        return dummyHead?.next
     }
 }
 ```
