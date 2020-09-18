@@ -1,4 +1,218 @@
 # Swift-Algorithms
+## 143. Reorder List
+将链表一分为二，然后将后半部分的链表反转与第一部分间序连接
+- time complexity: O(n)
+- space complexity: O(1)
+```swift
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     public var val: Int
+ *     public var next: ListNode?
+ *     public init() { self.val = 0; self.next = nil; }
+ *     public init(_ val: Int) { self.val = val; self.next = nil; }
+ *     public init(_ val: Int, _ next: ListNode?) { self.val = val; self.next = next; }
+ * }
+ */
+class Solution {
+    func reorderList(_ head: ListNode?) {
+        if head == nil {
+            return
+        }
+        
+        let mid = getMid(head)
+        let reversedHead = reverse(mid)
+        
+        var p1 = head, p2 = reversedHead
+        while p2?.next != nil {
+            var next = p1?.next
+            p1?.next = p2
+            p1 = next
+            
+            next = p2?.next
+            p2?.next = p1
+            p2 = next
+        }
+        
+    }
+    
+    func reverse(_ head: ListNode?) -> ListNode? {
+        var cur = head
+        var prev: ListNode? = nil
+        while cur != nil {
+            let next = cur?.next
+            cur?.next = prev
+            prev = cur
+            cur = next
+        }
+        return prev
+    }
+    
+    func getMid(_ head: ListNode?) -> ListNode? {
+        var slow = head, fast = head
+        while fast != nil && fast?.next != nil {
+            slow = slow?.next
+            fast = fast?.next?.next
+        }
+        return slow
+    }
+}
+```
+## 148. Sort List
+### Recursion
+- time complexity: O(nlogn), each merge takes O(n) times, there are O(logn) times of merge, so totally O(nlogn)
+- space complexity: O(logn)
+```swift
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     public var val: Int
+ *     public var next: ListNode?
+ *     public init() { self.val = 0; self.next = nil; }
+ *     public init(_ val: Int) { self.val = val; self.next = nil; }
+ *     public init(_ val: Int, _ next: ListNode?) { self.val = val; self.next = next; }
+ * }
+ */
+class Solution {
+    func sortList(_ head: ListNode?) -> ListNode? {
+        if head == nil || head?.next == nil {
+            return head
+        }
+        let mid = getMid(head)
+        let left = sortList(head)
+        let right = sortList(mid)
+        return merge(left, right)
+    }
+    
+    func merge(_ node1: ListNode?, _ node2: ListNode?) -> ListNode? {
+        var tempHead: ListNode? = ListNode(0), p1 = node1, p2 = node2
+        var prev = tempHead
+        while p1 != nil && p2 != nil {
+            if p1!.val < p2!.val {
+                prev?.next = p1
+                prev = p1
+                p1 = p1?.next
+            } else {
+                prev?.next = p2
+                prev = p2
+                p2 = p2?.next
+            }
+        }
+        prev?.next = p1 ?? p2
+        return tempHead?.next
+    }
+    
+    func getMid(_ head: ListNode?) -> ListNode? {
+        var slow = head, fast = head?.next
+        while fast != nil && fast?.next != nil {
+            slow = slow?.next
+            fast = fast?.next?.next
+        }
+        let mid = slow?.next
+        slow?.next = nil    // cut first half
+        return mid  // return head of second half
+    }
+}
+```
+### Iteration
+- time complexity: O(nlogn)
+- space complexity: O(1)
+```swift
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     public var val: Int
+ *     public var next: ListNode?
+ *     public init() { self.val = 0; self.next = nil; }
+ *     public init(_ val: Int) { self.val = val; self.next = nil; }
+ *     public init(_ val: Int, _ next: ListNode?) { self.val = val; self.next = next; }
+ * }
+ */
+class Solution {
+    var tail: ListNode? = ListNode()
+    var nextSubList: ListNode? = ListNode()
+    
+    func sortList(_ head: ListNode?) -> ListNode? {
+        if head == nil || head?.next == nil {
+            return head
+        }
+        let n = getCount(head)
+        var dummyHead: ListNode? = ListNode()
+        dummyHead?.next = head
+        var size = 1
+        
+        while size < n {
+            tail = dummyHead
+            var start = dummyHead?.next
+            while start != nil {
+                if start?.next == nil {
+                    tail?.next = start
+                    break
+                }
+                let mid = split(start, size)
+                merge(start, mid)
+                start = nextSubList
+            }
+            size *= 2
+        }
+        
+        return dummyHead?.next
+    }
+    
+    func merge(_ node1: ListNode?, _ node2: ListNode?) {        
+        var tempHead: ListNode? = ListNode(), p1 = node1, p2 = node2
+        var prev = tempHead
+        while p1 != nil && p2 != nil {
+            if p1!.val < p2!.val {
+                prev?.next = p1
+                p1 = p1?.next
+            } else {
+                prev?.next = p2
+                p2 = p2?.next
+            }
+            prev = prev?.next
+            
+        }
+        prev?.next = p1 ?? p2
+        
+        // find tail of merged list
+        while prev?.next != nil {
+            prev = prev?.next
+        }
+                
+        tail?.next = tempHead?.next // link old tail to the head of merged list
+        
+        tail = prev // update tail to the new tail of merged list
+    }
+    
+    func split(_ start: ListNode?, _ size: Int) -> ListNode? {
+        var slow = start, fast = start?.next
+        var index = 1
+        while (slow?.next != nil || fast?.next != nil) && index < size {
+            slow = slow?.next
+            fast = fast?.next?.next
+            index += 1
+        }
+        
+        let mid = slow?.next    // track start of second linked list
+        slow?.next = nil    // cut first linked list
+        nextSubList = fast?.next    // track start of next sublist
+        fast?.next = nil    // cut second linked list
+        
+        return mid  // return the start of second linked list
+    }
+    
+    func getCount(_ head: ListNode?) -> Int {
+        var cur = head
+        var count = 0
+        while cur != nil {
+            cur = cur?.next
+            count += 1
+        }
+        return count
+    }
+}
+```
 ## 86. Partition List
 将链表分成比x小的和比x大的两个链表，再连接起来。*当头节点不确定时，使用dummyHead*
 - time complexity: O(N)
@@ -2266,19 +2480,10 @@ class Solution {
     }
 }
 ```
-
-
-
 ## 138. Copy List with Random Pointer
-
 ### recursive approach
-
-*the head can be any node in the list*
-
-time complexity: O(n)
-
-space complexity: O(n), 字典和递归的stack都会占用n的复杂度
-
+- time complexity: O(n)
+- space complexity: O(n), 字典和递归的stack都会占用n的复杂度
 ```swift
 /**
  * Definition for a Node.
@@ -2295,36 +2500,139 @@ space complexity: O(n), 字典和递归的stack都会占用n的复杂度
  */
 
 class Solution {
-    var visited = [Node?: Node?]()
+    // holds old node as key, new node as value
+    var visitedTable = [Node?: Node?]()
     
     func copyRandomList(_ head: Node?) -> Node? {
-        if head == nil {
-            return nil
+        if head == nil { return nil }
+        
+        // if we have processed the current node, then return the cloned version
+        if visitedTable[head] != nil {
+            return visitedTable[head]!
         }
         
-        if visited[head] != nil {
-            return visited[head]!
-        }
+        var node: Node? = Node(head!.val)  // copy the node
+        visitedTable[head] = node
         
-        var copyNode = Node(head!.val)
+        node?.next = copyRandomList(head?.next)
+        node?.random = copyRandomList(head?.random)
         
-        visited[head] = copyNode
-        
-        copyNode.next = copyRandomList(head?.next)
-        copyNode.random = copyRandomList(head?.random)
-        
-        return copyNode
-    
+        return node
     }
 }
 ```
+### Iteration with O(n) space
+- time complexity: O(n)
+- space complexity: O(n)
+```swift
+/**
+ * Definition for a Node.
+ * public class Node {
+ *     public var val: Int
+ *     public var next: Node?
+ *     public var random: Node?
+ *     public init(_ val: Int) {
+ *         self.val = val
+ *         self.next = nil
+ *    	   self.random = nil
+ *     }
+ * }
+ */
 
+class Solution {
+    // holds old node as key, new node as value
+    var visitedTable = [Node?: Node?]()
+    
+    func copyRandomList(_ head: Node?) -> Node? {
+        if head == nil { return nil }
+        
+        var oldNode = head
+        var newNode: Node? = Node(oldNode!.val)
+        visitedTable[oldNode] = newNode
+        
+        while oldNode != nil {
+            newNode?.next = getClonedNode(oldNode?.next)
+            newNode?.random = getClonedNode(oldNode?.random)
+            
+            oldNode = oldNode?.next
+            newNode = newNode?.next
+        }
+        
+        return visitedTable[head]!
+        
+    }
+    
+    func getClonedNode(_ node: Node?) -> Node? {
+        if node == nil { return nil }
+        // if we have processed the current node, then return the cloned version
+        if visitedTable[node] != nil {
+            return visitedTable[node]!
+        }
+        
+        var newNode: Node? = Node(node!.val)  // copy the node
+        visitedTable[node] = newNode
+        
+        return newNode
+    }
+}
+```
+### Iteration with O(1) space
+- time complexity: O(n)
+- space complexity: O(1)
+```swift
+/**
+ * Definition for a Node.
+ * public class Node {
+ *     public var val: Int
+ *     public var next: Node?
+ *     public var random: Node?
+ *     public init(_ val: Int) {
+ *         self.val = val
+ *         self.next = nil
+ *    	   self.random = nil
+ *     }
+ * }
+ */
 
-
+class Solution {
+    func copyRandomList(_ head: Node?) -> Node? {
+        if head == nil { return nil }
+        
+        // insert cloned node just next to the original node
+        var oldNode = head
+        while oldNode != nil {
+            let copyNode: Node? = Node(oldNode!.val)
+            let tempNext = oldNode?.next
+            copyNode?.next = tempNext
+            oldNode?.next = copyNode
+            oldNode = tempNext
+        }
+        
+        // copy random pointers
+        oldNode = head
+        while oldNode != nil {
+            let clonedNode: Node? = oldNode?.next
+            clonedNode?.random = oldNode?.random?.next
+            oldNode = oldNode?.next?.next
+        }
+        
+        // unweave and get back the origin list and its copy
+        oldNode = head
+        var copyHead = head?.next
+        while oldNode != nil {
+            let clonedNode: Node? = oldNode?.next
+            oldNode?.next = clonedNode?.next
+            clonedNode?.next = oldNode?.next?.next
+            oldNode = oldNode?.next
+        }
+        
+        return copyHead
+        
+    }
+}
+```
 ## 708. Insert into a Sorted Circular Linked List
-
 双指针遍历
-
 1. insert between small and large value
 2. insert between tail and head if the value is larger than tail or smaller than head
 3. insert after head if all elements are the same
@@ -2741,17 +3049,54 @@ class MyLinkedList {
  * obj.deleteAtIndex(index)
  */
 ```
-
-
-
 ## 141. Linked List Cycle
+### HashTable
+- time complexity: O(n)
+- space complexity: O(n)
+```swift
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     public var val: Int
+ *     public var next: ListNode?
+ *     public init(_ val: Int) {
+ *         self.val = val
+ *         self.next = nil
+ *     }
+ * }
+ */
+extension ListNode: Equatable {
+    public static func == (lhs: ListNode, rhs: ListNode) -> Bool {
+        return lhs === rhs
+    }
+}
+extension ListNode: Hashable {
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(ObjectIdentifier(self))
+    }
+}
 
+class Solution {
+    func hasCycle(_ head: ListNode?) -> Bool {
+        if head == nil {
+            return false
+        }
+        var hashTable: Set<ListNode?> = []
+        var cur = head
+        while cur != nil {
+            if hashTable.contains(cur) {
+                return true
+            }
+            hashTable.insert(cur)
+            cur = cur?.next
+        }
+        return false
+    }
+}
+```
 ### Two Pointers
-
 time complexity: O(n)
-
 space complexity: O(1)
-
 ```swift
 /**
  * Definition for singly-linked list.
@@ -2767,29 +3112,68 @@ space complexity: O(1)
 
 class Solution {
     func hasCycle(_ head: ListNode?) -> Bool {
-        var slow = head, fast = head
+        var slow = head, fast = head?.next
         while fast != nil && fast?.next != nil {
-            slow = slow?.next
-            fast = fast?.next?.next
             if slow === fast {
                 return true
             }
+            slow = slow?.next
+            fast = fast?.next?.next
         }
         return false
     }
-}
+}}
 ```
 
 ## 142. Linked List Cycle II
+### HashTable
+- time complexity: O(n)
+- space complexity: O(n)
+```swift
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     public var val: Int
+ *     public var next: ListNode?
+ *     public init(_ val: Int) {
+ *         self.val = val
+ *         self.next = nil
+ *     }
+ * }
+ */
+extension ListNode: Equatable {
+    public static func == (lhs: ListNode, rhs: ListNode) -> Bool {
+        return lhs === rhs
+    }
+}
+extension ListNode: Hashable {
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(ObjectIdentifier(self))
+    }
+}
 
+class Solution {
+    func detectCycle(_ head: ListNode?) -> ListNode? {
+        if head == nil {
+            return head
+        }
+        var cur = head
+        var hashSet: Set<ListNode?> = []
+        while cur != nil {
+            if hashSet.contains(cur) {
+                return cur
+            }
+            hashSet.insert(cur)
+            cur = cur?.next
+        }
+        return nil
+    }
+}
+```
 ### Two Pointers
-
-time complexity: O(n)
-
-space complexity: O(1)
-
-先找到交点，如果有环的话，在用两个指针指向head和交点，一次只移动一步，指针相遇的地方即为环的起始点
-
+如果有环的话先找到交点，在用两个指针指向head和交点，一次只移动一步，指针相遇的地方即为环的起始点
+- time complexity: O(n)
+- space complexity: O(1)
 ```swift
 /**
  * Definition for singly-linked list.
@@ -2805,24 +3189,25 @@ space complexity: O(1)
 
 class Solution {
     func detectCycle(_ head: ListNode?) -> ListNode? {
-        
-        var head = head, intersect = getIntersect(head)
-        if intersect == nil { return nil}
-        
-        while head !== intersect {
-            head = head?.next
-            intersect = intersect?.next
-        }
-        
-        return head
-        
-    }
-    
-    private func getIntersect(_ head: ListNode?) -> ListNode? {
-        if head == nil || head?.next == nil {
+        if head == nil {
             return nil
         }
-        
+        // find the meeting point of slow and fast pointers
+        var intersect = getIntersect(head)
+        if intersect == nil {
+            return nil
+        }
+
+        // there must be a cycle
+        var start = head
+        while start !== intersect {
+            start = start?.next
+            intersect = intersect?.next
+        }
+        return start
+    }
+
+    func getIntersect(_ head: ListNode?) -> ListNode? {
         var slow = head, fast = head
         while fast != nil && fast?.next != nil {
             slow = slow?.next
@@ -2831,7 +3216,6 @@ class Solution {
                 return slow
             }
         }
-        
         return nil
     }
 }
@@ -3074,22 +3458,56 @@ class Solution {
 ```
 
 ## 234. Palindrome Linked List
-
-### Copy Linked List into array and use two pointers approach
-
-time complexity: O(n)
-
-space complexity: O(n)
-
+### Recursion
+- time complexity: O(n)
+- space complexity: O(n)
 ```swift
 /**
  * Definition for singly-linked list.
  * public class ListNode {
  *     public var val: Int
  *     public var next: ListNode?
- *     public init() { self.val = 0; self.next = nil; }
- *     public init(_ val: Int) { self.val = val; self.next = nil; }
- *     public init(_ val: Int, _ next: ListNode?) { self.val = val; self.next = next; }
+ *     public init(_ val: Int) {
+ *         self.val = val
+ *         self.next = nil
+ *     }
+ * }
+ */
+class Solution {
+    var frontPointer: ListNode? = nil
+
+    func isPalindrome(_ head: ListNode?) -> Bool {
+        frontPointer = head
+        return recurseCheck(head)
+    }
+
+    func recurseCheck(_ current: ListNode?) -> Bool {
+        if current != nil {
+            if !recurseCheck(current?.next) {
+                return false
+            }
+            if frontPointer!.val != current!.val {
+                return false
+            }
+            frontPointer = frontPointer?.next
+        }
+        return true
+    }
+}
+```
+### Copy Linked List into array and use two pointers approach
+- time complexity: O(n)
+- space complexity: O(n)
+```swift
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     public var val: Int
+ *     public var next: ListNode?
+ *     public init(_ val: Int) {
+ *         self.val = val
+ *         self.next = nil
+ *     }
  * }
  */
 class Solution {
@@ -3097,33 +3515,88 @@ class Solution {
         if head == nil || head?.next == nil {
             return true
         }
-        var arr = toArray(head)
-        print(arr)
-        var left = 0, right = arr.count - 1
-        while left < right {
-            if arr[left] != arr[right] {
-                return false
-            } else {
-                left += 1
-                right -= 1
-            }
-        }
-        return true
-    
-    }
-    
-    private func toArray(_ head: ListNode?) -> [Int] {
+        // copy all values to array
+        var values = [Int]()
         var cur = head
-        var arr = [Int]()
         while cur != nil {
-            arr.append(cur!.val)
+            values.append(cur!.val)
             cur = cur?.next
         }
-        return arr
+        
+        var left = 0, right = values.count - 1 
+        while left < right {
+            if values[left] != values[right] {
+                return false
+            }
+            left += 1
+            right -= 1
+        }
+        return true
+
     }
 }
 ```
+### Reverse Second-half in place
+- time complexity: O(n)
+- space complexity: O(1)
+```swift
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     public var val: Int
+ *     public var next: ListNode?
+ *     public init(_ val: Int) {
+ *         self.val = val
+ *         self.next = nil
+ *     }
+ * }
+ */
+class Solution {
+    func isPalindrome(_ head: ListNode?) -> Bool {
+        if head == nil || head?.next == nil {
+            return true
+        }
 
+        var fistPartEnd = findMid(head)
+        var secondPartHead = reverse(fistPartEnd?.next)
+
+        var result = true
+        var p1 = head, p2 = secondPartHead
+        while result && p2 != nil {
+            if p1!.val != p2!.val {
+                result = false
+            }
+            p1 = p1?.next
+            p2 = p2?.next
+        }
+
+        // restore original list
+        fistPartEnd?.next = reverse(secondPartHead)
+
+        return result
+    }
+
+    func reverse(_ head: ListNode?) -> ListNode? {
+        var prev: ListNode? = nil, cur = head
+        while cur != nil {
+            let temp = cur?.next
+            cur?.next = prev
+            prev = cur
+            cur = temp
+        }
+        return prev
+    }
+
+    func findMid(_ head: ListNode?) -> ListNode? {
+        var slow = head, fast = head?.next
+        while fast != nil && fast?.next != nil {
+            slow = slow?.next
+            fast = fast?.next?.next
+        }
+        return slow
+    }
+}
+```
 ## 21. Merge Two Sorted Lists
 ### Recursion
 - time complexity: O(M+N)
