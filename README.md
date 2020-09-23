@@ -1,4 +1,335 @@
 # Swift-Algorithms
+## 394. Decode String
+### Use Stack
+- time complexity: O(S), S为解码后的字符串长度
+- space complexity: O(S)
+```swift
+class Solution {
+    func decodeString(_ s: String) -> String {
+        if s.isEmpty {
+            return ""
+        }
+        
+        var stack = [Character]()
+        
+        for c in s {
+            if c != "]" {
+                stack.append(c)
+            } else {
+                var tempStack = [Character]()
+                while stack.last! != "[" {
+                    tempStack.append(stack.removeLast())
+                }
+                stack.removeLast()  // remove "["
+                tempStack.reverse()
+                let tempStr = String(tempStack)
+                
+                // find k
+                var numStack = [Character]()
+                while !stack.isEmpty && stack.last!.isNumber {
+                    numStack.append(stack.removeLast())
+                }
+                numStack.reverse()
+                
+                // duplicate tempStr k times
+                let k = Int(String(numStack))!  
+                var duplicateStr = ""
+                for _ in 0 ..< k {
+                    duplicateStr += tempStr
+                }
+                
+                // append characters to stack
+                for i in duplicateStr {
+                    stack.append(i)
+                }
+                
+            }
+        }
+        return String(stack)
+    }
+}
+```
+### Recursion
+- time complexity: O(S), S为解码后的字符串长度
+- space complexity: O(s), s为原字符串的长度
+```swift
+extension StringProtocol {
+    subscript(offset: Int) -> Character {
+        return self[index(startIndex, offsetBy: offset)]
+    }
+}
+
+class Solution {
+    
+    func decodeString(_ s: String) -> String {
+        var str = s
+        var pointer = 0
+        return getString(&str, &pointer)
+    }
+    
+    func getString(_ str: inout String, _ pointer: inout Int) -> String {
+        if pointer == str.count || str[pointer] == "]" {
+            return ""
+        }
+        
+        var res = ""
+        var rep = 1
+        let char = str[pointer]
+        
+        if char.isNumber {
+            rep = getDigits(&str, &pointer)
+            pointer += 1    // skip "["
+            var string = getString(&str, &pointer)
+            pointer += 1    // skip "]"
+            while rep > 0 {
+                res += string
+                rep -= 1
+            }
+        } else if char.isLetter {
+            res += String(char)
+            pointer += 1
+        }
+        
+        return res + getString(&str, &pointer)
+    }
+    
+    func getDigits(_ str: inout String, _ pointer: inout Int) -> Int {
+        var num = 0
+        while pointer < str.count && str[pointer].isNumber {
+            num = num * 10 + Int(String(str[pointer]))!
+            pointer += 1
+        }
+        return num
+    }
+}
+```
+## 150. Evaluate Reverse Polish Notation
+### Reducing list in place
+- time complexity: O(n\*2)
+- space complexity: O(1) 
+```swift
+class Solution {
+    func evalRPN(_ tokens: [String]) -> Int {
+        var arr = tokens
+        var pointer = 0, length = arr.count
+        let symbols: Set = ["+", "-", "*", "/"]
+        
+        while length > 1 {
+            // jump to first operation symbol
+            while !symbols.contains(arr[pointer]) {
+                pointer += 1
+            }
+            
+            let operation = arr[pointer]
+            let num1 = Int(arr[pointer - 2])!
+            let num2 = Int(arr[pointer - 1])!
+            
+            if operation == "+" {
+                arr[pointer] = String(num1 + num2)
+            } else if operation == "-" {
+                arr[pointer] = String(num1 - num2)
+            } else if operation == "*" {
+                arr[pointer] = String(num1 * num2)
+            } else if operation == "/" {
+                arr[pointer] = String(num1 / num2)
+            }
+            
+            // Delete previous two numbers
+            for i in pointer-2 ..< length - 2 {
+                arr[i] = arr[i + 2]
+            }
+            pointer -= 1
+            length -= 2
+        } 
+        
+        return Int(arr[0])!
+    }
+    
+}
+```
+### Use stack
+- time complexity: O(n)
+- space complexity: O(n)
+```swift
+class Solution {
+    func evalRPN(_ tokens: [String]) -> Int {
+        var stack = [Int]()
+        var operations: Set = ["*", "+", "-", "/"]
+        for str in tokens {
+            if !operations.contains(str) {
+                stack.append(Int(str)!)
+            } else {
+                let num2 = stack.removeLast()
+                let num1 = stack.removeLast()
+                let result = applyOperation(str, num1, num2)
+                stack.append(result)
+            }
+        }
+        return stack.removeLast()
+    }
+    
+    func applyOperation(_ operation: String, _ num1: Int, _ num2: Int) -> Int {
+        var result = 0
+        if operation == "+" {
+            result = num1 + num2
+        } else if operation == "-" {
+            result = num1 - num2
+        } else if operation == "*" {
+            result = num1 * num2
+        } else if operation == "/" {
+            result = num1 / num2
+        }
+        return result
+    }
+}
+```
+## 155. Min Stack
+### Stack of (Value, Minimum) Pairs
+- time complexity: O(1) for all operations
+- space complexity: O(n)
+```swift
+
+class MinStack {
+
+    /** initialize your data structure here. */
+    var stack = [[Int]]()
+    
+    init() {
+        
+    }
+    
+    func push(_ x: Int) {
+        if stack.isEmpty {
+            stack.append([x, x])
+        } else {
+            let currentMin = stack.last![1]
+            stack.append([x, min(x, currentMin)])
+        }
+    }
+    
+    func pop() {
+        stack.removeLast()
+    }
+    
+    func top() -> Int {
+        return stack.last![0]
+    }
+    
+    func getMin() -> Int {
+        return stack.last![1]
+    }
+}
+
+/**
+ * Your MinStack object will be instantiated and called as such:
+ * let obj = MinStack()
+ * obj.push(x)
+ * obj.pop()
+ * let ret_3: Int = obj.top()
+ * let ret_4: Int = obj.getMin()
+ */
+```
+### Use Two Stacks
+注意stack有重复元素时最小值会出现bug，因此需要把重复的最小值也推入minElem中
+- time complexity: O(1) for all operations
+- space complexity: O(n)
+```swift
+class MinStack {
+
+    /** initialize your data structure here. */
+    var arr = [Int]()
+    var minElem = [Int]()
+
+    init() {
+    }
+    
+    func push(_ x: Int) {
+        arr.append(x)
+        if minElem.isEmpty || x <= minElem.last! {
+            minElem.append(x)
+        }
+    }
+    
+    func pop() {
+        if minElem.last! == arr.last! {
+            minElem.removeLast()
+        }
+        arr.removeLast()
+    }
+    
+    func top() -> Int {
+        return arr.last!
+    }
+    
+    func getMin() -> Int {
+        return minElem.last!
+    }
+}
+
+/**
+ * Your MinStack object will be instantiated and called as such:
+ * let obj = MinStack()
+ * obj.push(x)
+ * obj.pop()
+ * let ret_3: Int = obj.top()
+ * let ret_4: Int = obj.getMin()
+ */
+```
+### Improved two stacks
+在记录最小值的stack中使用pairs，避免了重复出现的最小值
+- time complexity: O(1) for all operations
+- space complexity: O(n)
+```swift
+class MinStack {
+
+    /** initialize your data structure here. */
+    var arr = [Int]()
+    var minElem = [[Int]]()
+
+    init() {
+        
+    }
+    
+    func push(_ x: Int) {
+        arr.append(x)
+        if minElem.isEmpty || x < minElem.last![0] {
+            minElem.append([x, 1])
+        } else if x == minElem.last![0] {
+            minElem[minElem.count - 1][1] += 1
+        }
+    }
+    
+    func pop() {
+        if minElem.last![0] == arr.last! {
+            minElem[minElem.count - 1][1] -= 1
+        }
+        
+        // remove elem if count is 0
+        if minElem.last![1] == 0 {
+            minElem.removeLast()
+        }
+        
+        arr.removeLast()
+    }
+    
+    func top() -> Int {
+        return arr.last!
+    }
+    
+    func getMin() -> Int {
+        return minElem.last![0]
+    }
+}
+
+/**
+ * Your MinStack object will be instantiated and called as such:
+ * let obj = MinStack()
+ * obj.push(x)
+ * obj.pop()
+ * let ret_3: Int = obj.top()
+ * let ret_4: Int = obj.getMin()
+ */
+```
 ## 143. Reorder List
 将链表一分为二，然后将后半部分的链表反转与第一部分间序连接
 - time complexity: O(n)
