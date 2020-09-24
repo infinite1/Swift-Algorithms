@@ -2678,15 +2678,10 @@ class Solution {
     }
 }
 ```
-
-
-
 ## 94. Binary Tree Inorder Traversal
-
-time complexity: O(n)
-
-space complexity: O(n) worset case, average O(H), where H is tree height
-
+### Recursion
+- time complexity: O(n)
+- space complexity: O(n)
 ```swift
 /**
  * Definition for a binary tree node.
@@ -2705,22 +2700,96 @@ space complexity: O(n) worset case, average O(H), where H is tree height
  */
 class Solution {
     func inorderTraversal(_ root: TreeNode?) -> [Int] {
-        var results = [Int]()
-        
         guard let root = root else {
             return []
         }
-        
-        results += inorderTraversal(root.left)
-        results.append(root.val)
-        results += inorderTraversal(root.right)
-        
-        return results
+        var res = [Int]()
+        res += inorderTraversal(root.left)
+        res.append(root.val)
+        res += inorderTraversal(root.right)
+        return res
     }
 }
 ```
-
-
+### Stack and Iteration
+- time complexity: O(n)
+- space complexity: O(n)
+```swift
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     public var val: Int
+ *     public var left: TreeNode?
+ *     public var right: TreeNode?
+ *     public init() { self.val = 0; self.left = nil; self.right = nil; }
+ *     public init(_ val: Int) { self.val = val; self.left = nil; self.right = nil; }
+ *     public init(_ val: Int, _ left: TreeNode?, _ right: TreeNode?) {
+ *         self.val = val
+ *         self.left = left
+ *         self.right = right
+ *     }
+ * }
+ */
+class Solution {
+    func inorderTraversal(_ root: TreeNode?) -> [Int] {       
+        var res = [Int]()
+        var stack = [TreeNode?]()
+        var cur = root
+        while cur != nil || !stack.isEmpty {    
+            while cur != nil {
+                stack.append(cur)
+                cur = cur?.left
+            }
+            cur = stack.removeLast()
+            res.append(cur!.val)
+            cur = cur?.right
+        }
+        return res
+    }
+}
+```
+### Morris Traversal
+- time complexity: O(n)
+- space complexity: O(1)
+```swift
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     public var val: Int
+ *     public var left: TreeNode?
+ *     public var right: TreeNode?
+ *     public init() { self.val = 0; self.left = nil; self.right = nil; }
+ *     public init(_ val: Int) { self.val = val; self.left = nil; self.right = nil; }
+ *     public init(_ val: Int, _ left: TreeNode?, _ right: TreeNode?) {
+ *         self.val = val
+ *         self.left = left
+ *         self.right = right
+ *     }
+ * }
+ */
+class Solution {
+    func inorderTraversal(_ root: TreeNode?) -> [Int] {
+        var res = [Int]()
+        var cur = root
+        while cur != nil {
+            if cur?.left != nil {
+                var pre = cur?.left
+                while pre?.right != nil {
+                    pre = pre?.right
+                }
+                pre?.right = cur
+                let temp = cur
+                cur = cur?.left
+                temp?.left = nil
+            } else {
+                res.append(cur!.val)
+                cur = cur?.right
+            }
+        }
+        return res
+    }
+}
+```
 
 ## 144. Binary Tree Preorder Traversal
 
