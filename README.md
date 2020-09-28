@@ -1,4 +1,247 @@
 # Swift-Algorithms
+## 200. Number of Islands
+### DFS
+- time complexity: O(M\*N), M is number of rows and N is number of columns
+- space complexity: O(M\*N), worst case when the grid are filled with all lands
+```swift
+class Solution {
+
+    func numIslands(_ grid: [[Character]]) -> Int {
+        if grid.isEmpty || grid[0].isEmpty {
+            return 0
+        }
+        
+        var map = grid
+        var num = 0
+        let nr = map.count
+        let nc = map[0].count
+        
+        for i in 0 ..< nr {
+            for j in 0 ..< nc {
+                if map[i][j] == "1" {
+                    num += 1
+                    dfs(&map, i, j)
+                }
+            }
+        }
+        
+        return num
+    }
+    
+    func dfs(_ map: inout [[Character]], _ r: Int, _ c: Int) {
+        let nr = map.count
+        let nc = map[0].count
+        if r < 0 || c < 0 || r >= nr || c >= nc || map[r][c] == "0" {
+            return
+        }
+         
+        map[r][c] = "0"
+        dfs(&map, r - 1, c)
+        dfs(&map, r + 1, c)
+        dfs(&map, r, c - 1)
+        dfs(&map, r, c + 1)
+    }
+    
+}
+```
+### BFS
+- time complexity: O(M\*N)
+- space complexity: O(min(M, N))
+```swift
+class Solution {
+    func numIslands(_ grid: [[Character]]) -> Int {
+        if grid.isEmpty || grid[0].isEmpty {
+            return 0
+        }
+        
+        var map = grid
+        let nr = map.count, nc = map[0].count
+        var num = 0
+        for i in 0 ..< nr {
+            for j in 0 ..< nc {
+                if map[i][j] == "1" {
+                    num += 1
+                    map[i][j] = "0"
+                    var queue = [(row: Int, col: Int)]()
+                    queue.append((i, j))
+                    
+                    while !queue.isEmpty {
+                        let loc = queue.removeFirst()
+                        let row = loc.row, col = loc.col
+                        if row - 1 >= 0 && map[row - 1][col] == "1" {
+                            queue.append((row - 1, col))
+                            map[row - 1][col] = "0"
+                        }
+                        if row + 1 < nr && map[row + 1][col] == "1" {
+                            queue.append((row + 1, col))
+108152902
+                        }
+                        if col - 1 >= 0 && map[row][col - 1] == "1" {
+                            queue.append((row, col - 1))
+                            map[row][col - 1] = "0"
+                        }
+                        if col + 1 < nc && map[row][col + 1] == "1" {
+                            queue.append((row, col + 1))
+                            map[row][col + 1] = "0"
+                        }
+                    }
+                }
+            }
+        }
+        
+        return num
+    }
+}
+```
+### Union Find
+- time complexity: O(M\*N)
+- space complexity: O(M\*N)
+```swift
+class Solution {
+    func numIslands(_ grid: [[Character]]) -> Int {
+        if grid.isEmpty || grid[0].isEmpty {
+            return 0
+        }
+        
+        var map = grid
+        let nr = map.count, nc = map[0].count
+        let uf = UnionFind(map)
+        for i in 0 ..< nr {
+            for j in 0 ..< nc {
+                if map[i][j] == "1" {
+                    map[i][j] = "0"
+                    if i + 1 < nr && map[i + 1][j] == "1" {
+                        uf.union(i * nc + j, (i + 1) * nc + j)
+                    }
+                    if j + 1 < nc && map[i][j + 1] == "1" {
+                        uf.union(i * nc + j, i * nc + j + 1)
+                    }
+                }
+            }
+        }
+        return uf.count
+    }
+}
+
+class UnionFind {
+    var count: Int
+    var parent: [Int]
+    
+    init(_ grid: [[Character]]) {
+        count = 0
+        let m = grid.count
+        let n = grid[0].count
+        parent = []
+        for i in 0 ..< m {
+            for j in 0 ..< n {
+                parent.append(i * n + j)
+                if grid[i][j] == "1" {
+                    count += 1
+                }
+            }
+        }
+    }
+    
+    func find(_ i: Int) -> Int {
+        if parent[i] != i {
+            parent[i] = find(parent[i])
+        }
+        return parent[i]
+    }
+    
+    func union(_ x: Int, _ y: Int) {
+        let rootx = find(x)
+        let rooty = find(y)
+        if rootx != rooty {
+            parent[rooty] = rootx
+            count -= 1
+        }
+    }
+}
+```
+## 133. Clone Graph
+### DFS Search
+- time complexity: O(n)
+- space complexity: O(n)
+```swift
+/**
+ * Definition for a Node.
+ * public class Node {
+ *     public var val: Int
+ *     public var neighbors: [Node?]
+ *     public init(_ val: Int) {
+ *         self.val = val
+ *         self.neighbors = []
+ *     }
+ * }
+ */
+
+class Solution {
+    var visited = [Int: Node?]()
+    func cloneGraph(_ node: Node?) -> Node? {
+        guard let cur = node else {
+            return nil
+        }
+
+        if let item = visited[cur.val] {
+            return item
+        }
+
+        let copyNode = Node(cur.val)
+        visited[cur.val] = copyNode
+
+        for n in cur.neighbors {
+            copyNode.neighbors.append(cloneGraph(n))
+        }
+
+        return copyNode
+
+    }
+}
+```
+### BFS Search
+- time complexity: O(n)
+- space complexity: O(n)
+```swift
+/**
+ * Definition for a Node.
+ * public class Node {
+ *     public var val: Int
+ *     public var neighbors: [Node?]
+ *     public init(_ val: Int) {
+ *         self.val = val
+ *         self.neighbors = []
+ *     }
+ * }
+ */
+
+class Solution {
+    var visited = [Int: Node?]()
+
+    func cloneGraph(_ node: Node?) -> Node? {
+        if node == nil {
+            return nil
+        }
+
+        var queue = [Node?]()
+        queue.append(node)
+        visited[node!.val] = Node(node!.val)
+
+        while !queue.isEmpty {
+            let temp = queue.removeFirst()
+            for n in temp!.neighbors {
+                if visited[n!.val] == nil {
+                    visited[n!.val] = Node(n!.val)
+                    queue.append(n)
+                }
+                visited[temp!.val]!!.neighbors.append(visited[n!.val]!)
+            }
+        }
+
+        return visited[node!.val]!
+    }
+}
+```
 ## 394. Decode String
 ### Use Stack
 - time complexity: O(S), S为解码后的字符串长度
