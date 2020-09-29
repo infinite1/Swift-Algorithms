@@ -1,4 +1,261 @@
 # Swift-Algorithms
+## 542. 01 Matrix
+### BFS
+- time complexity: O(m\*n), m is row number of matrix, n is column number of matrix
+- space complexity: O(m\*n)
+```swift
+class Solution {
+    func updateMatrix(_ matrix: [[Int]]) -> [[Int]] {
+        var queue = [(x: Int, y: Int)]()
+        var m = matrix
+        let nr = matrix.count, nc = matrix[0].count
+        var visited = Array(repeating: Array(repeating: false, count: nc), count: nr)
+        
+        for i in 0..<nr {
+            for j in 0..<nc {
+                if m[i][j] == 0 {
+                    queue.append((i, j))
+                    visited[i][j] = true
+                }
+            }
+        }
+        
+        while !queue.isEmpty {
+            let loc = queue.removeFirst()
+            let val = m[loc.x][loc.y]
+            for item: (dx: Int, dy: Int) in [(-1, 0), (1, 0), (0, -1), (0, 1)] {
+                let x = loc.x + item.dx, y = loc.y + item.dy
+                if x >= 0 && x < nr && y >= 0 && y < nc && visited[x][y] == false {
+                    m[x][y] = val + 1
+                    queue.append((x, y))
+                    visited[x][y] = true
+                }
+                
+            }
+        }
+        
+        return m
+    }
+}
+```
+### DP
+如果在一次遍历中比较四个方向，那么如果一个点自身不为0，位于角落且被三个同样不为0的点包围，遍有可能会得不到最小值，而是会卡在10000得不到最优解
+- time complexity: O(m\*n)
+- space complexity: O(m\*n)
+```swift
+class Solution {
+    func updateMatrix(_ matrix: [[Int]]) -> [[Int]] {
+        var m = matrix
+        let nr = matrix.count, nc = matrix[0].count
+        
+        for i in 0..<nr {
+            for j in 0..<nc {
+                m[i][j] = m[i][j] == 0 ? 0 : 10000
+            }
+        }
+        
+        for i in 0..<nr {
+            for j in 0..<nc {
+                if i - 1 >= 0 {
+                    m[i][j] = min(m[i][j], m[i - 1][j] + 1)
+                }
+                if j - 1 >= 0 {
+                    m[i][j] = min(m[i][j], m[i][j - 1] + 1)
+                }
+            }
+        }
+        
+        for i in (0..<nr).reversed() {
+            for j in (0..<nc).reversed() {
+                if i + 1 < nr {
+                    m[i][j] = min(m[i][j], m[i + 1][j] + 1)
+                }
+                if j + 1 < nc {
+                    m[i][j] = min(m[i][j], m[i][j + 1] + 1)
+                }
+            }
+        }
+        
+        
+        return m
+    }
+}
+```
+## 232. Implement Queue using Stacks
+### Use one stack and Swift API
+- push: O(1)
+- pop: O(n)
+```swift
+class MyQueue {
+
+    /** Initialize your data structure here. */
+    var queue: [Int]
+
+    init() {
+        queue = []
+    }
+    
+    /** Push element x to the back of queue. */
+    func push(_ x: Int) {
+        queue.append(x)
+    }
+    
+    /** Removes the element from in front of queue and returns that element. */
+    func pop() -> Int {
+        queue.removeFirst()
+    }
+    
+    /** Get the front element. */
+    func peek() -> Int {
+        queue[0]
+    }
+    
+    /** Returns whether the queue is empty. */
+    func empty() -> Bool {
+        queue.isEmpty
+    }
+}
+
+/**
+ * Your MyQueue object will be instantiated and called as such:
+ * let obj = MyQueue()
+ * obj.push(x)
+ * let ret_2: Int = obj.pop()
+ * let ret_3: Int = obj.peek()
+ * let ret_4: Bool = obj.empty()
+ */
+```
+### Use two stacks-O(n) push, O(1) pop
+- push: O(n)
+- pop: O(1)
+```swift
+class MyQueue {
+
+    /** Initialize your data structure here. */
+    var s1: [Int]
+    var s2: [Int]
+    
+    init() {
+        s1 = []
+        s2 = []
+    }
+    
+    /** Push element x to the back of queue. */
+    func push(_ x: Int) {
+        while !s1.isEmpty {
+            s2.append(s1.removeLast())
+        } 
+        s2.append(x)
+        while !s2.isEmpty {
+            s1.append(s2.removeLast())
+        } 
+    }
+    
+    /** Removes the element from in front of queue and returns that element. */
+    func pop() -> Int {
+        s1.removeLast()
+    }
+    
+    /** Get the front element. */
+    func peek() -> Int {
+        s1.last!
+    }
+    
+    /** Returns whether the queue is empty. */
+    func empty() -> Bool {
+        s1.isEmpty
+    }
+}
+
+/**
+ * Your MyQueue object will be instantiated and called as such:
+ * let obj = MyQueue()
+ * obj.push(x)
+ * let ret_2: Int = obj.pop()
+ * let ret_3: Int = obj.peek()
+ * let ret_4: Bool = obj.empty()
+ */
+```
+### Two Stack - O(1) push, Amortized O(1) pop
+- push: O(1)
+- pop: Amortized O(1), worst case O(n)
+```swift
+class MyQueue {
+
+    /** Initialize your data structure here. */
+    var s1: [Int]
+    var s2: [Int]
+    var front: Int?
+    
+    init() {
+        s1 = []
+        s2 = []
+    }
+    
+    /** Push element x to the back of queue. */
+    func push(_ x: Int) {
+        if s1.isEmpty {
+            front = x
+        }
+        s1.append(x)
+    }
+    
+    /** Removes the element from in front of queue and returns that element. */
+    func pop() -> Int {
+        if s2.isEmpty {
+            while !s1.isEmpty {
+                s2.append(s1.removeLast())
+            }
+        }
+        return s2.removeLast()
+    }
+    
+    /** Get the front element. */
+    func peek() -> Int {
+        if !s2.isEmpty {
+            return s2.last!
+        }
+        return front!
+    }
+    
+    /** Returns whether the queue is empty. */
+    func empty() -> Bool {
+        s1.isEmpty && s2.isEmpty
+    }
+}
+
+/**
+ * Your MyQueue object will be instantiated and called as such:
+ * let obj = MyQueue()
+ * obj.push(x)
+ * let ret_2: Int = obj.pop()
+ * let ret_3: Int = obj.peek()
+ * let ret_4: Bool = obj.empty()
+ */
+```
+## 84. Largest Rectangle in Histogram
+### Stack
+- time complexity: O(n)
+- space complexity: O(n)
+```swift
+class Solution {
+    func largestRectangleArea(_ heights: [Int]) -> Int {
+        var stack = [Int]()
+        stack.append(-1)
+        var maxArea = 0
+        for i in 0..<heights.count {
+            while stack.last! != -1 && heights[stack.last!] > heights[i] {
+                maxArea = max(maxArea, heights[stack.removeLast()] * (i - stack.last! - 1))
+            }
+            stack.append(i)
+        }
+        while stack.last != -1 {
+            maxArea = max(maxArea, heights[stack.removeLast()] * (heights.count - stack.last! - 1))
+        }
+        return maxArea
+    }
+}
+```
 ## 200. Number of Islands
 ### DFS
 - time complexity: O(M\*N), M is number of rows and N is number of columns
@@ -143,16 +400,18 @@ class UnionFind {
     }
     
     func find(_ i: Int) -> Int {
-        if parent[i] != i {
-            parent[i] = find(parent[i])
+        var p = i
+        while p != parent[p] {
+            p = parent[p]
         }
-        return parent[i]
+        return p
     }
     
     func union(_ x: Int, _ y: Int) {
         let rootx = find(x)
         let rooty = find(y)
         if rootx != rooty {
+            // raname rooty's component to rootx's name
             parent[rooty] = rootx
             count -= 1
         }
@@ -2786,17 +3045,10 @@ class Solution {
     }
 }
 ```
-
-
-
 ## 102. Binary Tree Level Order Traversal
-
 ### recursion
-
-time complexity: O(n)
-
-space complexity: O(n)
-
+- time complexity: O(n)
+- space complexity: O(n)
 ```swift
 /**
  * Definition for a binary tree node.
@@ -2804,41 +3056,43 @@ space complexity: O(n)
  *     public var val: Int
  *     public var left: TreeNode?
  *     public var right: TreeNode?
- *     public init(_ val: Int) {
+ *     public init() { self.val = 0; self.left = nil; self.right = nil; }
+ *     public init(_ val: Int) { self.val = val; self.left = nil; self.right = nil; }
+ *     public init(_ val: Int, _ left: TreeNode?, _ right: TreeNode?) {
  *         self.val = val
- *         self.left = nil
- *         self.right = nil
+ *         self.left = left
+ *         self.right = right
  *     }
  * }
  */
 class Solution {
     var results = [[Int]]()
-
+    
     func levelOrder(_ root: TreeNode?) -> [[Int]] {
-        guard let root = root else { return results }
-        traverseTree(root, 0)
+        if root == nil {
+            return []
+        }
+        helper(root, 0)
         return results
     }
-
-    func traverseTree(_ root: TreeNode, _ level: Int) {
-        if results.count == level {
-            results.append([Int]())
+    
+    func helper(_ node: TreeNode?, _ level: Int) {
+        if level == results.count {
+            results.append([])
         }
-
-        results[level].append(root.val)
-
-        if let left = root.left {
-            traverseTree(left, level + 1)
+        results[level].append(node!.val)
+        if let _ = node?.left {
+            helper(node?.left, level + 1)
         }
-        if let right = root.right {
-            traverseTree(right, level + 1)
-        }
+        if let _ = node?.right {
+            helper(node?.right, level + 1)
+        }   
     }
 }
 ```
-
 ### iteration
-
+- time complexity: O(n)
+- space complexity: O(n)
 ```swift
 /**
  * Definition for a binary tree node.
@@ -2855,34 +3109,31 @@ class Solution {
  */
 class Solution {
     func levelOrder(_ root: TreeNode?) -> [[Int]] {
-        guard let root = root else { return [] }
-        var queue = [TreeNode?]()
+        if root == nil {
+            return []
+        }
         var results = [[Int]]()
+        var queue = [TreeNode?]()
         queue.append(root)
         while !queue.isEmpty {
-            var size = queue.count
-            var levelVal = [Int]()
-            while size > 0 {
+            let size = queue.count
+            var levelValues = [Int]()
+            for _ in 0..<size {
                 let node = queue.removeFirst()
-                levelVal.append(node!.val)
+                levelValues.append(node!.val)
                 if let left = node?.left {
                     queue.append(left)
                 }
                 if let right = node?.right {
                     queue.append(right)
                 }
-                size -= 1
             }
-            results.append(levelVal)
+            results.append(levelValues)
         }
         return results
     }
 }
 ```
-
-time complexity: O(n)
-space complexity: O(n)
-
 ## 145. Binary Tree Postorder Traversal
 
 time complexity: O(n)
