@@ -1,4 +1,111 @@
 # Swift-Algorithms
+## 260. Single Number III
+### Hash Table
+- time complexity: O(n)
+- space complexity: O(n)
+```swift
+class Solution {
+    func singleNumber(_ nums: [Int]) -> [Int] {
+        var dict = [Int: Int]()
+        var res = [Int]()
+        for n in nums {
+            if dict[n] == nil {
+                dict[n] = 0
+            }
+            dict[n]! += 1
+        }
+        for (val, freq) in dict {
+            if freq == 1 {
+                res.append(val)
+            }
+        }
+        return res
+    }
+}
+```
+### Bit-wise
+- time complexity: O(n)
+- space complexity: O(1)
+```swift
+class Solution {
+    func singleNumber(_ nums: [Int]) -> [Int] {
+        // difference between two numbers which where seen only once
+        var bitmask = 0
+        for n in nums {
+            bitmask ^= n
+        }
+        
+        // rightmost 1-bit diff between x and y
+        var diff = bitmask & (-bitmask)
+        
+        var x = 0
+        for n in nums {
+            if n & diff != 0 {
+                x ^= n
+            }
+        }
+        return [x, bitmask ^ x]
+    }
+}
+```
+## 137. Single Number II
+### Hash Table
+- time complexity: O(n)
+- space complexity: O(n)
+```swift
+class Solution {
+    func singleNumber(_ nums: [Int]) -> Int {
+        var dict = [Int: Int]()
+        for n in nums {
+            if dict[n] == nil {
+                dict[n] = 0
+            }
+            dict[n]! += 1
+        }
+        for (val, freq) in dict {
+            if freq == 1 {
+                return val
+            }
+        }
+        return 0
+    }
+}
+```
+### Math
+(3(a+b+c) - (a+a+a+b+b+b+c)) / 2 = c
+- time complexity: O(n)
+- space complexity: O(n)
+```swift
+class Solution {
+    func singleNumber(_ nums: [Int]) -> Int {
+        var set = Set<Int>()
+        var sumOfSet = 0, sumOfNums = 0
+        for n in nums {
+            if !set.contains(n) {
+                set.insert(n)
+                sumOfSet += n
+            }
+            sumOfNums += n
+        }
+        return (3 * sumOfSet - sumOfNums) / 2
+    }
+}
+```
+### Bit Wise Operator
+- time complexity: O(n)
+- space complexity: O(1)
+```swift
+class Solution {
+    func singleNumber(_ nums: [Int]) -> Int {
+        var seenOnce = 0, seenTwice = 0
+        for n in nums {
+            seenOnce = ~seenTwice & (seenOnce ^ n)
+            seenTwice = ~seenOnce & (seenTwice ^ n)
+        }
+        return seenOnce
+    }
+}
+```
 ## 542. 01 Matrix
 ### BFS
 - time complexity: O(m\*n), m is row number of matrix, n is column number of matrix
@@ -1807,31 +1914,63 @@ class Solution {
     }
 }
 ```
-
-
-
 ## 136. Single Number
-
+### Hash Table
+- time complexity: O(n)
+- space complexity: O(n)
+```swift
+class Solution {
+    func singleNumber(_ nums: [Int]) -> Int {
+        var dict = [Int: Int]()
+        for n in nums {
+            if dict[n] == nil {
+                dict[n] = 0
+            }
+            dict[n]! += 1
+        }
+        for (val, freq) in dict {
+            if freq == 1 {
+                return val
+            }
+        }
+        return 0
+    }
+}
+```
+### Math
+2(a+b+c) - (a+a+b+b+c) = c
+- time complexity: O(n)
+- space complexity: O(n)
+```swift
+class Solution {
+    func singleNumber(_ nums: [Int]) -> Int {
+        var set = Set<Int>()
+        var sumOfSet = 0, sumOfNums = 0
+        for n in nums {
+            if !set.contains(n) {
+                set.insert(n)
+                sumOfSet += n
+            }
+            sumOfNums += n
+        }
+        return 2 * sumOfSet - sumOfNums
+    }
+}
+```
 ### XOR approach
-
-time complexity: O(n)
-
-space complexity: O(1) 
-
+- time complexity: O(n)
+- space complexity: O(1)
 ```swift
 class Solution {
     func singleNumber(_ nums: [Int]) -> Int {
         var res = 0
-        for i in nums {
-            res ^= i
+        for n in nums {
+            res ^= n
         }
         return res
     }
 }
 ```
-
-
-
 ## 9. Palindrome Number
 
 time complexity: O(log(x))
