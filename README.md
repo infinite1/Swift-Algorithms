@@ -1,4 +1,613 @@
 # Swift-Algorithms
+## 912. Sort an Array
+### Bubble Sort
+- time complexity: O(n^2) 
+- space complexity: O(1) 
+- stable: yes
+```swift
+class Solution {
+    func sortArray(_ nums: [Int]) -> [Int] {
+        var arr = nums
+        bubbleSort(&arr)
+        return arr
+    }
+    
+    func bubbleSort(_ arr: inout [Int]) {
+        for i in 0 ..< arr.count - 1 {
+            for j in 0 ..< arr.count - i - 1 {
+                if arr[j] > arr[j + 1] {
+                    arr.swapAt(j, j+1)
+                }
+            }
+        }
+    }
+}
+```
+### Selection Sort
+- time complexity: O(n^2) 
+- space complexity: O(1) 
+- stable: no
+```swift
+class Solution {
+    func sortArray(_ nums: [Int]) -> [Int] {
+        var arr = nums
+        selectionSort(&arr)
+        return arr
+    }
+    
+    func selectionSort(_ arr: inout [Int]) {
+        for i in 0..<arr.count - 1 {
+            var minIndex = i
+            for j in i..<arr.count {
+                if arr[j] < arr[minIndex] {
+                    minIndex = j
+                }
+            }
+            arr.swapAt(i, minIndex)
+        }
+    }
+}
+```
+### Insertion Sort
+- time complexity: O(n^2) 
+- space complexity: O(1) 
+- stable: yes
+```swift
+class Solution {
+    func sortArray(_ nums: [Int]) -> [Int] {
+        var arr = nums
+        insertionSort(&arr)
+        return arr
+    }
+    
+    func insertionSort(_ arr: inout [Int]) {
+        for i in 1..<arr.count {
+            var pre = i - 1
+            let cur = arr[i]
+            while pre >= 0 && arr[pre] > cur {
+                arr[pre + 1] = arr[pre]
+                pre -= 1
+            }
+            arr[pre + 1] = cur
+        }
+    }
+}
+```
+### Quick Sort
+- time complexity: O(nlogn) average, O(n^2) worst case when arrays are sorted in ascending or descending order
+- space complexity: O(logn) average, O(n) worst case
+- stable: no
+```swift
+class Solution {
+    func sortArray(_ nums: [Int]) -> [Int] {
+        var arr = nums
+        quickSort(&arr, 0, arr.count - 1)
+        return arr
+    }
+
+    func quickSort(_ arr: inout [Int], _ left: Int, _ right: Int) {
+        if left >= right { return }
+        let partitionIndex = partition(&arr, left, right)
+        quickSort(&arr, left, partitionIndex - 1)
+        quickSort(&arr, partitionIndex + 1, right)
+    }
+
+    func partition(_ arr: inout [Int], _ left: Int, _ right: Int) -> Int {
+        var i = left
+        let pivot = arr[right]
+        for j in left..<right {
+            if arr[j] < pivot {
+                arr.swapAt(i, j)
+                i += 1
+            }
+        }
+        arr.swapAt(i, right)
+        return i
+    }
+}
+```
+### Merge Sort
+- time complexity: O(nlogn)
+- space complexity: O(n)
+- stable: yes, it actually depends on the implementation. If we change the line `left[l] <= right[r] ` to `left[l] < right[r] `, then the algorithm will become unstable
+```swift
+class Solution {
+    func sortArray(_ nums: [Int]) -> [Int] {
+        return mergeSort(nums)
+    }
+
+    func mergeSort(_ arr: [Int]) -> [Int] {
+        if arr.count <= 1 {
+            return arr
+        }
+
+        let mid = arr.count / 2
+        let left = mergeSort(Array(arr[..<mid]))
+        let right = mergeSort(Array(arr[mid...]))
+        return merge(left, right)
+    }
+
+    func merge(_ left: [Int], _ right: [Int]) -> [Int] {
+        var res = [Int]()
+        var l = 0, r = 0
+        while l < left.count && r < right.count {
+            if left[l] <= right[r] {
+                res.append(left[l])
+                l += 1
+            } else {
+                res.append(right[r])
+                r += 1
+            }
+        }
+        if l < left.count {
+            res.append(contentsOf: left[l...])
+        }
+        if r < right.count {
+            res.append(contentsOf: right[r...])
+        }
+        return res
+    }
+}
+```
+### Heap Sort 
+- time complexity: O(nlogn)
+- space complexity: O(1)
+- stable: no
+```swift
+class Solution {
+    func sortArray(_ nums: [Int]) -> [Int] {
+        var arr = nums
+        heapSort(&arr)
+        return arr
+    }
+    
+    func heapSort(_ arr: inout [Int]) {
+        var length = arr.count
+        buildMaxHeap(&arr, length)
+        var l = arr.count
+        for i in stride(from: arr.count - 1, through: 0, by: -1) {
+            arr.swapAt(0, i)
+            length -= 1
+            heapify(&arr, 0, length)
+        }
+    }
+    
+    func buildMaxHeap(_ arr: inout [Int], _ length: Int) {
+        for i in stride(from: length / 2, through: 0, by: -1) {
+            heapify(&arr, i, length)
+        }
+    }
+    
+    func heapify(_ arr: inout [Int], _ i: Int, _ length: Int) {
+        var left = 2 * i + 1, right = 2 * i + 2, largest = i
+        if left < length && arr[left] > arr[largest] {
+            largest = left
+        }
+        if right < length && arr[right] > arr[largest] {
+            largest = right
+        }
+        if largest != i {
+            arr.swapAt(i, largest)
+            heapify(&arr, largest, length)
+        }
+    }
+}
+```
+## 81. Search in Rotated Sorted Array II
+- time complexity: O(logn) best case, O(n) worst case when all elements are identical
+- space complexity: O(1)
+```swift
+class Solution {
+    func search(_ nums: [Int], _ target: Int) -> Bool {
+        var left = 0, right = nums.count - 1
+        while left <= right {
+            let mid = (left + right) / 2
+            if nums[mid] == target {
+                return true
+            }
+            if nums[left] == nums[mid] {
+                left += 1
+                continue
+            }
+            if nums[left] < nums[mid] {
+                if nums[left] <= target && target < nums[mid] {
+                    right = mid - 1
+                } else {
+                    left = mid + 1
+                }
+            } else {
+                if target > nums[mid] && target <= nums[right] {
+                    left = mid + 1
+                } else {
+                    right = mid - 1
+                }
+            }
+        }
+        return false
+    }
+}
+```
+## 33. Search in Rotated Sorted Array
+- time complexity: O(logn)
+- space complexity: O(1)
+```swift
+class Solution {
+    func search(_ nums: [Int], _ target: Int) -> Int {
+        var left = 0, right = nums.count - 1
+        while left <= right {
+            let mid = (left + right) / 2
+            if nums[mid] == target {
+                return mid
+            } else if nums[mid] >= nums[left] {
+                if target >= nums[left] && target < nums[mid] {
+                    right = mid - 1
+                } else {
+                    left = mid + 1
+                }
+            } else {
+                if target <= nums[right] && target > nums[mid] {
+                    left = mid + 1
+                } else {
+                    right = mid - 1
+                }
+            }
+        }
+        return -1
+    }
+}
+```
+## 154. Find Minimum in Rotated Sorted Array II
+- time complexity: O(logn) average, O(N) worst case if nums have all same elements
+- space complexity: O(1)
+```swift
+class Solution {
+    func findMin(_ nums: [Int]) -> Int {
+        var left = 0, right = nums.count - 1
+        while left <= right {
+            let mid = (left + right) / 2
+            if nums[mid] < nums[right] {
+                right = mid
+            } else if nums[mid] > nums[right] {
+                left = mid + 1
+            } else {
+                right -= 1
+            }
+        }
+        return nums[left]
+    }
+}
+```
+## 153. Find Minimum in Rotated Sorted Array
+- time complexity: O(logn)
+- space complexity: O(1)
+```swift
+class Solution {
+    func findMin(_ nums: [Int]) -> Int {
+        var left = 0, right = nums.count - 1
+        while left < right {
+            let mid = (left + right) / 2
+            if nums[mid] < nums[right] {
+                right = mid
+            } else {
+                left = mid + 1
+            }
+        }
+        return nums[left]
+    }
+}
+```
+## 278. First Bad Version
+- time complexity: O(logn)
+- space complexity: O(1)
+```swift
+/**
+ * The knows API is defined in the parent class VersionControl.
+ *     func isBadVersion(_ version: Int) -> Bool{}
+ */
+
+class Solution : VersionControl {
+    func firstBadVersion(_ n: Int) -> Int {
+        var left = 1, right = n
+        while left < right {
+            let mid = (left + right) / 2
+            if isBadVersion(mid) {
+                right = mid
+            } else {
+                left = mid + 1
+            }
+        }
+        return left
+    }
+}
+```
+## 74. Search a 2D Matrix
+- time complexity: O(logn)
+- space complexity: O(1)
+```swift
+class Solution {
+    func searchMatrix(_ matrix: [[Int]], _ target: Int) -> Bool {
+        if matrix.isEmpty {
+            return false
+        }
+        
+        let m = matrix.count, n = matrix[0].count
+        var left = 0, right = m * n - 1
+        while left <= right {
+            let mid = (left + right) / 2
+            let element = matrix[mid / n][mid % n]
+            if element == target {
+                return true
+            } else if element < target {
+                left = mid + 1
+            } else {
+                right = mid - 1
+            }
+        }
+        return false
+    }
+}
+```
+## 61. Search for a Range (LintCode)
+- time complexity: O(logn)
+- space complexity: O(1)
+```swift
+class Solution {
+    func searchRange(_ nums: [Int], _ target: Int) -> [Int] {
+        if nums.isEmpty {
+            return [-1, -1]
+        }
+        
+        var res = [-1, -1]
+        // find first occurence of target
+        var left = 0, right = nums.count - 1
+        while left + 1 < right {
+            let mid = (left + right) / 2
+            if nums[mid] > target {
+                right = mid
+            } else if nums[mid] < target {
+                left = mid
+            } else {
+                right = mid
+            }
+        }
+        
+        if nums[left] == target {
+            res[0] = left
+        } else if nums[right] == target {
+            res[0] = right
+        } else {
+            return res
+        }
+        
+        // find second occurence of target
+        left = 0
+        right = nums.count - 1
+        while left + 1 < right {
+            let mid = (left + right) / 2
+            if nums[mid] > target {
+                right = mid
+            } else if nums[mid] < target {
+                left = mid
+            } else {
+                left = mid
+            }
+        }
+        
+        if nums[left] == target {
+            res[1] = left
+        } else if nums[right] == target {
+            res[1] = right
+        } else {
+            return res
+        }
+        
+        return res
+    }
+}
+```
+## 35. Search Insert Position
+- time complexity: O(logn)
+- space complexity: O(1)
+```swift
+class Solution {
+    func searchInsert(_ nums: [Int], _ target: Int) -> Int {
+        var left = 0, right = nums.count - 1
+        while left <= right {
+            let mid = (left + right) / 2
+            if nums[mid] == target {
+                return mid
+            } else if nums[mid] < target {
+                left = mid + 1
+            } else {
+                right = mid - 1
+            }
+        }
+        return left
+    }
+}
+```
+## 704. Binary Search
+- time complexity: O(logn)
+- space complexity: O(1)
+```swift
+class Solution {
+    func search(_ nums: [Int], _ target: Int) -> Int {
+        var left = 0, right = nums.count - 1
+        while left <= right {
+            let mid = (left + right) / 2
+            if nums[mid] == target {
+                return mid
+            } else if nums[mid] < target {
+                left = mid + 1
+            } else {
+                right = mid - 1
+            }
+        }
+        return -1
+    }
+}
+```
+## 201. Bitwise AND of Numbers Range
+### Bit Shift
+- time complexity: O(1)
+- space complexity: O(1)
+```swift
+class Solution {
+    func rangeBitwiseAnd(_ m: Int, _ n: Int) -> Int {
+        var shift = 0
+        var m = m, n = n
+        while m < n {
+            m >>= 1
+            n >>= 1
+            shift += 1
+        }
+        return m << shift
+    }
+}
+```
+### Turn-off rightmost 1 bits
+- time complexity: O(1), require less iteration than above approach
+- space complexity: O(1)
+```swift
+class Solution {
+    func rangeBitwiseAnd(_ m: Int, _ n: Int) -> Int {
+        var n = n
+        while m < n {
+            n &= n - 1
+        }
+        return m & n
+    }
+}
+```
+## 190. Reverse Bits
+### Bit by bit reverse
+- time complexity: O(1)
+- space complexity: O(1)
+```swift
+class Solution {
+    func reverseBits(_ n: Int) -> Int {
+        var num = n
+        var res = 0, power = 31
+        while num != 0 {
+            res += (num & 1) << power
+            num >>= 1
+            power -= 1
+        }
+        return res
+    }
+}
+```
+## 338. Counting Bits
+### Pop Count
+- time complexity: O(n\*k), k is number of bits in each number
+- space complexity: O(n)
+```swift
+class Solution {
+    func countBits(_ num: Int) -> [Int] {
+        var res = [Int]()
+        for n in 0...num {
+            res.append(countOnes(n))
+        }
+        return res
+    }
+
+    func countOnes(_ n: Int) -> Int {
+        var sum = 0
+        var num = n
+        while num != 0 {
+            sum += 1
+            num &= num - 1
+        }
+        return sum
+    }
+}
+```
+### DP + Most Significant Bit
+- time complexity: O(n)
+- space complexity: O(n)
+```swift
+class Solution {
+    func countBits(_ num: Int) -> [Int] {
+        var res = Array(repeating: 0, count: num + 1)
+        var i = 0, b = 1
+        while b <= num {
+            // generate [b, 2b) or [b, num) from [0, b)
+            while i < b && i + b <= num {
+                res[i + b] = res[i] + 1
+                i += 1
+            }
+            i = 0
+            b = b << 1
+        }
+        return res
+    }
+}
+```
+### DP + Least Significant Bit
+- time complexity: O(n)
+- space complexity: O(n)
+```swift
+class Solution {
+    func countBits(_ num: Int) -> [Int] {
+        if num == 0 { return [0] }
+        var res = Array(repeating: 0, count: num + 1)
+        for i in 1...num {
+            res[i] = res[i >> 1] + i & 1
+        }
+        return res
+    }
+}
+```
+### DP + Last Set Bit
+- time complexity: O(n)
+- space complexity: O(n)
+```swift
+class Solution {
+    func countBits(_ num: Int) -> [Int] {
+        if num == 0 { return [0] }
+        var res = Array(repeating: 0, count: num + 1)
+        for n in 1...num {
+            res[n] = res[n & (n - 1)] + 1
+        }
+        return res
+    }
+}
+```
+## 191. Number of 1 Bits
+### Loop and Flip
+- time complexity: O(1)，cause integer is 32-bit, so always cost constant time
+- space complexity: O(1)
+```swift
+class Solution {
+    func hammingWeight(_ n: Int) -> Int {
+        var bits = 0
+        var mask = 1
+        for _ in 0..<32 {
+            if n & mask != 0 {
+                bits += 1
+            }
+            mask = mask << 1
+        }
+        return bits
+    }
+}
+```
+### Bit Manipulation
+- time complexity: O(1)
+- space complexity: O(1)
+```swift
+class Solution {
+    func hammingWeight(_ n: Int) -> Int {
+        var sum = 0
+        var num = n
+        while num != 0 {
+            sum += 1
+            num &= num - 1
+        }
+        return sum
+    }
+}
+```
 ## 260. Single Number III
 ### Hash Table
 - time complexity: O(n)
