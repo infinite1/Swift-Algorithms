@@ -1,4 +1,686 @@
 # Swift-Algorithms
+## 92. Backpack (LintCode)
+- time complexity: O(mn)
+- space complexity: O(mn)
+```swift
+class Solution {
+    func backPack(_ m: Int, _ A: [Int]) -> Int {
+        let n = A.count
+        var dp = Array(repeating: Array(repeating: 0, count: m + 1), count: n + 1) 
+        for i in 1...n {
+            for w in 1...m {
+                if w - A[i - 1] < 0 {
+                    dp[i][w] = dp[i - 1][w]
+                } else {
+                    dp[i][w] = max(dp[i - 1][w], dp[i - 1][w - A[i - 1]] + A[i - 1])
+                }
+            }
+        }
+        
+        return dp[n][m]
+    }
+}
+```
+## 125. Backpack II (LintCode)
+- time complexity: O(mn)
+- space complexity: O(mn)
+```swift
+class Solution {
+    func backPackII(_ m: Int, _ weight: [Int], _ value: [Int]) -> Int {
+        let n = weight.count
+        var dp = Array(repeating: Array(repeating: 0, count: m + 1), count: n + 1)
+        for i in 1...n {
+            for w in 1...m {
+                if w - weight[i - 1] < 0 {
+                    dp[i][w] = dp[i - 1][w]
+                } else {
+                    dp[i][w] = max(dp[i - 1][w - weight[i - 1]] + value[i - 1], dp[i - 1][w])
+                }
+            }
+        }
+        return dp[n][m]
+    }
+}
+```
+## 322. Coin Change
+### Top Down + Memorisation
+- time complexity: O(nk), k is number of denominations
+- space complexity: O(n)
+```swift
+class Solution {
+    var dict = [Int: Int]()
+    
+    func coinChange(_ coins: [Int], _ amount: Int) -> Int {
+        return dp(coins, amount)
+    }
+    
+    func dp(_ coins: [Int], _ amount: Int) -> Int {
+        if amount == 0 {
+            return 0
+        }
+        if amount < 0 {
+            return -1
+        }
+        
+        if dict[amount] != nil {
+            return dict[amount]!
+        }
+        
+        var res = Int.max
+        for c in coins {
+            var sub = dp(coins, amount - c)
+            if sub == -1 {
+                continue
+            }
+            res = min(res, sub + 1)
+        }
+        
+        dict[amount] = res == Int.max ? -1 : res
+        return dict[amount]!
+    }
+}
+```
+### Bottom Up
+- time complexity: O(nk)
+- space complexity: O(n)
+```swift
+class Solution {
+    
+    func coinChange(_ coins: [Int], _ amount: Int) -> Int {
+        var dp = Array(repeating: amount + 1, count: amount + 1)
+        dp[0] = 0
+        for i in 1 ..< dp.count {
+            for coin in coins {
+                if i - coin < 0 {
+                    continue
+                }
+                dp[i] = min(dp[i], 1 + dp[i - coin])
+            }
+        }
+        return dp[amount] == amount + 1 ? -1 : dp[amount]
+    }
+}
+```
+## 72. Edit Distance
+- time complexity: O(mn) 
+- space complexity: O(mn)
+```swift
+class Solution {
+    func minDistance(_ word1: String, _ word2: String) -> Int {
+        if word1.isEmpty {
+            return word2.count
+        }
+        if word2.isEmpty {
+            return word1.count
+        }
+        
+        var arr1 = word1.map{ String($0) }, arr2 = word2.map{ String($0) }
+        var dp = Array(repeating: Array(repeating: 0, count: arr2.count + 1), count: arr1.count + 1)
+        for i in 1...arr1.count {
+            dp[i][0] = i
+        }
+        for j in 1...arr2.count {
+            dp[0][j] = j
+        }
+        
+        for i in 1...arr1.count {
+            for j in 1...arr2.count {
+                if arr1[i - 1] == arr2[j - 1] {
+                    dp[i][j] = dp[i - 1][j - 1]
+                } else {
+                    dp[i][j] = min(dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + 1)
+                }
+            }
+        }
+        
+        return dp[arr1.count][arr2.count]
+    }
+}
+```
+## 1143. Longest Common Subsequence
+### DP
+- time complexity: O(mn) 
+- space complexity: O(mn)
+```swift
+class Solution {
+    func longestCommonSubsequence(_ text1: String, _ text2: String) -> Int {
+        let t1 = Array(text1)
+        let t2 = Array(text2)
+        
+        var dp = Array(repeating: Array(repeating: 0, count: t2.count + 1), count: t1.count + 1)
+        for i in 1...t1.count {
+            for j in 1...t2.count {
+                if t1[i - 1] == t2[j - 1] {
+                    dp[i][j] = dp[i - 1][j - 1] + 1
+                } else {
+                    dp[i][j] = max(dp[i - 1][j], dp[i][j - 1])
+                }
+            }
+        }
+        return dp[t1.count][t2.count]
+    }  
+}
+```
+## 139. Word Break
+### DP
+- time complexity: O(n^2) 
+- space complexity: O(n)
+```swift
+class Solution {
+    func wordBreak(_ s: String, _ wordDict: [String]) -> Bool {
+        let set = Set(wordDict)
+        var dp = Array(repeating: false, count: s.count + 1)
+        dp[0] = true
+        for i in 1...s.count {
+            for j in 0..<i {
+                let start = s.index(s.startIndex, offsetBy: j)
+                let end = s.index(s.startIndex, offsetBy: i)
+                let subStr = String(s[start..<end])
+                if dp[j] && set.contains(subStr) {
+                    dp[i] = true
+                    break
+                }
+            }
+        }
+        return dp.last!
+    }
+}
+```
+## 300. Longest Increasing Subsequence
+### DP
+- time complexity: O(n^2) 
+- space complexity: O(n)
+```swift
+class Solution {
+    func lengthOfLIS(_ nums: [Int]) -> Int {
+        if nums.count <= 1 {
+            return nums.count
+        }
+        
+        var dp = Array(repeating: 1, count: nums.count)
+        var maxAns = 1
+        for i in 1..<nums.count {
+            var maxVal = 0
+            for j in 0..<i {
+                if nums[i] > nums[j] {
+                    maxVal = max(maxVal, dp[j])
+                }
+            }
+            dp[i] = maxVal + 1
+            maxAns = max(maxAns, dp[i])
+        }
+        return maxAns
+    }
+}
+```
+### Greedy + Binary Search
+- time complexity: O(nlogn) 
+- space complexity: O(n)
+```swift
+class Solution {
+    func lengthOfLIS(_ nums: [Int]) -> Int {
+        if nums.count <= 1 {
+            return nums.count
+        }
+        
+        var d = [Int]()
+        for n in nums {
+            if d.isEmpty || n > d.last! {
+                d.append(n)
+            } else {
+                var l = 0, r = d.count - 1, loc = r
+                while l <= r {
+                    let mid = (l + r) / 2
+                    if d[mid] >= n {
+                        r = mid - 1
+                        loc = mid
+                    } else {
+                        l = mid + 1
+                    }
+                }
+                d[loc] = n
+            }
+        }
+        return d.count
+    }
+}
+```
+## 132. Palindrome Partitioning II
+### DP
+- time complexity: O(n^3) 
+- space complexity: O(n) 
+```swift
+class Solution {
+    func minCut(_ s: String) -> Int {
+        var s = Array(s).map { String($0) }
+        if s.count == 0 || s.count == 1 {
+            return 0
+        }
+        
+        var dp = Array(repeating: 0, count: s.count)
+        for i in 0..<s.count {
+            dp[i] = i
+            if isPalindrome(s, 0, i) {
+                dp[i] = 0
+                continue
+            }
+            
+            for j in 0..<i {
+                if isPalindrome(s, j + 1, i) {
+                    dp[i] = min(dp[i], dp[j] + 1)
+                }
+            }
+        }
+        
+        return dp.last!
+    }
+    
+    func isPalindrome(_ s: [String], _ i: Int, _ j: Int) -> Bool {
+        var i = i, j = j
+        while i < j {
+            if s[i] != s[j] {
+                return false
+            }
+            i += 1
+            j -= 1
+        }
+        return true
+    }
+}
+```
+### Optimised DP
+- time complexity: O(n^2) 
+- space complexity: O(n^2) 
+```swift
+class Solution {
+    func minCut(_ s: String) -> Int {
+        var s = Array(s).map { String($0) }
+        if s.count == 0 || s.count == 1 {
+            return 0
+        }
+        
+        var dp = Array(repeating: 0, count: s.count)
+        
+        var checkPalindrome = Array(repeating: Array(repeating: false, count: s.count), count: s.count)
+        for right in 0..<s.count {
+            for left in 0...right {
+                if s[left] == s[right] && (right - left <= 2 || checkPalindrome[left + 1][right - 1]) {
+                    checkPalindrome[left][right] = true
+                }
+            }
+        }
+        
+        for i in 0..<s.count {
+            dp[i] = i
+            if checkPalindrome[0][i] {
+                dp[i] = 0
+                continue
+            } 
+            for j in 0..<i {
+                if checkPalindrome[j + 1][i] {
+                    dp[i] = min(dp[i], dp[j] + 1)
+                }
+            }
+        }
+        
+        return dp.last!
+    }
+}
+```
+## 45. Jump Game II
+### Greedy
+- time complexity: O(n) 
+- space complexity: O(1)
+```swift
+class Solution {
+    func jump(_ nums: [Int]) -> Int {
+        var end = 0
+        var maxPosition = 0
+        var steps = 0
+        for i in 0 ..< nums.count - 1 {
+            maxPosition = max(maxPosition, nums[i] + i)
+            if i == end {
+                end = maxPosition
+                steps += 1
+            }
+        }
+        return steps
+    }
+}
+```
+## 55. Jump Game
+### Greedy
+- time complexity: O(n) 
+- space complexity: O(1) 
+```swift
+class Solution {
+    func canJump(_ nums: [Int]) -> Bool {
+        var rightmost = 0
+        for i in 0..<nums.count {
+            if i <= rightmost {
+                rightmost = max(rightmost, nums[i] + i)
+                if rightmost >= nums.count - 1 {
+                    return true
+                }
+            }
+        }
+        return false
+    }
+}
+```
+## 70. Climbing Stairs
+### Recursion + Memorisation
+- time complexity: O(n) 
+- space complexity: O(n) 
+```swift
+class Solution {
+    var table = [Int: Int]()
+
+    func climbStairs(_ n: Int) -> Int {
+        if n == 1 || n == 0 {
+            return 1
+        }
+
+        if table[n] != nil {
+            return table[n]!
+        }
+        table[n] = climbStairs(n - 1) + climbStairs(n - 2)
+        return table[n]!
+    }
+}
+```
+### DP with O(n) space
+- time complexity: O(n) 
+- space complexity: O(n) 
+```swift
+class Solution {
+    func climbStairs(_ n: Int) -> Int {
+        var arr = Array(repeating: 1, count: n + 1) 
+        for i in stride(from: 2, to: n + 1, by: 1) {
+            arr[i] = arr[i - 1] + arr[i - 2]
+        }
+        return arr[n]
+    }
+}
+```
+### DP with O(1) space
+- time complexity: O(n) 
+- space complexity: O(1) 
+```swift
+class Solution {
+    func climbStairs(_ n: Int) -> Int {
+        var s1 = 1, s2 = 1 
+        for i in stride(from: 2, to: n + 1, by: 1) {
+            let temp = s2
+            s2 += s1
+            s1 = temp
+        }
+        return s2
+    }
+}
+```
+## 63. Unique Paths II
+### DP
+- time complexity: O(mn) 
+- space complexity: O(mn) 
+```swift
+class Solution {
+    func uniquePathsWithObstacles(_ obstacleGrid: [[Int]]) -> Int {
+        if obstacleGrid[0][0] == 1 {
+            return 0
+        }
+        
+        let m = obstacleGrid.count, n = obstacleGrid[0].count
+        var dp = Array(repeating: Array(repeating: 1, count: n), count: m)
+        
+        for i in 1..<m {
+            if obstacleGrid[i][0] == 1 || dp[i - 1][0] == 0 {
+                dp[i][0] = 0
+            }
+        }
+        
+        for j in 1..<n {
+            if obstacleGrid[0][j] == 1 || dp[0][j - 1] == 0 {
+                dp[0][j] = 0
+            }
+        }
+        
+        for i in 1..<m {
+            for j in 1..<n {
+                dp[i][j] = obstacleGrid[i][j] == 1 ? 0 : dp[i - 1][j] + dp[i][j - 1]
+            }
+        }
+        return dp[m - 1][n - 1]
+    }
+}
+```
+### DP + O(n) space
+- time complexity: O(mn) 
+- space complexity: O(n)
+```swift
+class Solution {
+    func uniquePathsWithObstacles(_ obstacleGrid: [[Int]]) -> Int {
+        if obstacleGrid[0][0] == 1 {
+            return 0
+        }
+        
+        let m = obstacleGrid.count, n = obstacleGrid[0].count
+        var dp = Array(repeating: 0, count: n)
+        dp[0] = 1
+        
+        for i in 0..<m {
+            for j in 0..<n {
+                if obstacleGrid[i][j] == 1 {
+                    dp[j] = 0
+                } else {
+                    if j - 1 >= 0 {
+                        dp[j] += dp[j - 1]
+                    }  
+                }
+            }
+        }
+        return dp[n - 1]
+    }
+}
+```
+### DP + O(1) space
+- time complexity: O(mn) 
+- space complexity: O(1) 
+```swift
+class Solution {
+    func uniquePathsWithObstacles(_ obstacleGrid: [[Int]]) -> Int {
+        var obstacleGrid = obstacleGrid
+
+        if obstacleGrid[0][0] == 1 {
+            return 0
+        }
+        
+        obstacleGrid[0][0] = 1
+
+        let m = obstacleGrid.count, n = obstacleGrid[0].count
+        
+        for i in 1..<m {
+            obstacleGrid[i][0] = (obstacleGrid[i][0] == 0 && obstacleGrid[i - 1][0] == 1) ? 1 : 0
+        }
+        
+        for j in 1..<n {
+            obstacleGrid[0][j] = (obstacleGrid[0][j] == 0 && obstacleGrid[0][j - 1] == 1) ? 1 : 0
+        }
+        
+        for i in 1..<m {
+            for j in 1..<n {
+                obstacleGrid[i][j] = obstacleGrid[i][j] == 1 ? 0 : obstacleGrid[i - 1][j] + obstacleGrid[i][j - 1]
+            }
+        }
+        return obstacleGrid[m - 1][n - 1]
+    }
+}
+```
+## 62. Unique Paths
+### DP
+- time complexity: O(mn) 
+- space complexity: O(mn) 
+```swift
+class Solution {
+    func uniquePaths(_ m: Int, _ n: Int) -> Int {
+        var dp = Array(repeating: Array(repeating: 1, count: n), count: m)
+        for i in 1..<m {
+            for j in 1..<n {
+                dp[i][j] = dp[i - 1][j] + dp[i][j - 1]
+            }
+        }
+        return dp[m - 1][n - 1]
+    }
+}
+```
+### DP with O(n) space
+- time complexity: O(mn) 
+- space complexity: O(n) 
+```swift
+class Solution {
+    func uniquePaths(_ m: Int, _ n: Int) -> Int {
+        var dp = Array(repeating: 1, count: n)
+        for i in 1..<m {
+            for j in 1..<n {
+                dp[j] = dp[j] + dp[j - 1]
+            }
+        }
+        return dp[n - 1]
+    }
+}
+```
+## 64. Minimum Path Sum
+### DP
+- time complexity: O(mn) 
+- space complexity: O(mn) 
+```swift
+class Solution {
+    func minPathSum(_ grid: [[Int]]) -> Int {
+        var dp = Array(repeating: Array(repeating: 0, count: grid[0].count), count: grid.count)
+        for i in stride(from: grid.count - 1, through: 0, by: -1) {
+            for j in stride(from: grid[0].count - 1, through: 0, by: -1) {
+                if i == grid.count - 1 && j != grid[0].count - 1 {
+                    dp[i][j] = grid[i][j] + dp[i][j + 1]
+                } else if i != grid.count - 1 && j == grid[0].count - 1 {
+                    dp[i][j] = grid[i][j] + dp[i + 1][j]
+                } else if i != grid.count - 1 && j != grid[0].count - 1 {
+                    dp[i][j] = grid[i][j] + min(dp[i][j + 1], dp[i + 1][j])
+                } else {
+                    dp[i][j] = grid[i][j]
+                }
+            }
+        }
+        return dp[0][0]
+    }
+}
+```
+### DP with O(n) space
+- time complexity: O(mn) 
+- space complexity: O(n) 
+```swift
+class Solution {
+    func minPathSum(_ grid: [[Int]]) -> Int {
+        var dp = Array(repeating: 0, count: grid[0].count)
+        for i in stride(from: grid.count - 1, through: 0, by: -1) {
+            for j in stride(from: grid[0].count - 1, through: 0, by: -1) {
+                if i == grid.count - 1 && j != grid[0].count - 1 {
+                    dp[j] = grid[i][j] + dp[j + 1]
+                } else if i != grid.count - 1 && j == grid[0].count - 1 {
+                    dp[j] = grid[i][j] + dp[j]
+                } else if i != grid.count - 1 && j != grid[0].count - 1 {
+                    dp[j] = grid[i][j] + min(dp[j + 1], dp[j])
+                } else {
+                    dp[j] = grid[i][j]
+                }
+            }
+        }
+        return dp[0]
+    }
+}
+```
+### DP with O(1) space
+- time complexity: O(mn) 
+- space complexity: O(1) 
+```swift
+class Solution {
+    func minPathSum(_ grid: [[Int]]) -> Int {
+        var grid = grid
+        for i in stride(from: grid.count - 1, through: 0, by: -1) {
+            for j in stride(from: grid[0].count - 1, through: 0, by: -1) {
+                if i == grid.count - 1 && j != grid[0].count - 1 {
+                    grid[i][j] = grid[i][j] + grid[i][j + 1]
+                } else if i != grid.count - 1 && j == grid[0].count - 1 {
+                    grid[i][j] = grid[i][j] + grid[i + 1][j]
+                } else if i != grid.count - 1 && j != grid[0].count - 1 {
+                    grid[i][j] = grid[i][j] + min(grid[i][j + 1], grid[i + 1][j])
+                } else {
+                    grid[i][j] = grid[i][j]
+                }
+            }
+        }
+        return grid[0][0]
+    }
+}
+```
+## 120. Triangle
+### Top-down with Memoization
+- time complexity: O(n^2) 
+- space complexity: O(n^2) 
+```swift
+class Solution {
+    var memo = [[Int?]]()
+    func minimumTotal(_ triangle: [[Int]]) -> Int {
+        memo = Array(repeating: Array(repeating: nil, count: triangle.count), count: triangle.count)
+        return dfs(triangle, 0, 0)
+    }
+    
+    func dfs(_ triangle: [[Int]], _ i: Int, _ j: Int) -> Int {
+        if i == triangle.count {
+            return 0
+        }
+        
+        if memo[i][j] != nil {
+            return memo[i][j]!
+        }
+        
+        memo[i][j] = min(dfs(triangle, i + 1, j), dfs(triangle, i + 1, j + 1)) + triangle[i][j]
+        
+        return memo[i][j]!
+    }
+}
+```
+### Bottom-up with Tabulation
+- time complexity: O(n^2) 
+- space complexity: O(n^2) 
+```swift
+class Solution {
+    func minimumTotal(_ triangle: [[Int]]) -> Int {
+        var memo = Array(repeating: Array(repeating: 0, count: triangle.count + 1), count: triangle.count + 1)
+        for i in stride(from: triangle.count - 1, through: 0, by: -1) {
+            for j in 0...i {
+                memo[i][j] = min(memo[i + 1][j], memo[i + 1][j + 1]) + triangle[i][j]
+            }
+        }
+        return memo[0][0]
+    }
+}
+```
+### Optimised Tabulation
+- time complexity: O(n^2) 
+- space complexity: O(n)
+```swift
+class Solution {
+    func minimumTotal(_ triangle: [[Int]]) -> Int {
+        var memo = Array(repeating: 0, count: triangle.count + 1)
+        for i in stride(from: triangle.count - 1, through: 0, by: -1) {
+            for j in 0...i {
+                memo[j] = min(memo[j], memo[j + 1]) + triangle[i][j]
+            }
+        }
+        return memo[0]
+    }
+}
+```
 ## 912. Sort an Array
 ### Bubble Sort
 - time complexity: O(n^2) 
@@ -149,7 +831,7 @@ class Solution {
     }
 }
 ```
-### Heap Sort 
+### Heap Sort
 - time complexity: O(nlogn)
 - space complexity: O(1)
 - stable: no
