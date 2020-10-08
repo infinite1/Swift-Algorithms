@@ -1,4 +1,375 @@
 # Swift-Algorithms
+## 3. Longest Substring Without Repeating Characters
+- time complexity: O(n)
+- space complexity: O(K), K is number of distinct characters
+```swift
+class Solution {
+    func lengthOfLongestSubstring(_ s: String) -> Int {
+        var start = 0, maxLength = 0
+        var dict = [Character: Int]()
+        var sArray = [Character](s)
+
+        for end in 0..<sArray.count {
+            let rightChar = sArray[end]
+            if dict[rightChar] != nil {
+                start = max(start, dict[rightChar]! + 1)
+            }
+            dict[rightChar] = end
+            maxLength = max(maxLength, end - start + 1)
+        }
+
+        return maxLength
+    }
+}
+```
+## 438. Find All Anagrams in a String
+- time complexity: O(s + p)
+- space complexity: O(p)
+```swift
+class Solution {
+    func findAnagrams(_ s: String, _ p: String) -> [Int] {
+        var sArray = [Character](s)
+        var map = [Character: Int]()
+        for i in p {
+            map[i, default: 0] += 1
+        }
+        var left = 0, matched = 0
+        var results = [Int]()
+        
+        for right in 0..<sArray.count {
+            let rightChar = sArray[right]
+            if map[rightChar] != nil {
+                map[rightChar]! -= 1
+                if map[rightChar]! == 0 {
+                    matched += 1
+                }
+            }
+
+            while matched == map.count {
+                if right - left + 1 == p.count {
+                    results.append(left)
+                }
+
+                let leftChar = sArray[left]
+                if map[leftChar] != nil {
+                    if map[leftChar]! == 0 {
+                        matched -= 1
+                    }
+                    map[leftChar]! += 1
+                }
+
+                left += 1
+            }
+        }
+
+        return results
+    }
+}
+```
+## 567. Permutation in String
+- time complexity: O(s1 + s2)
+- space complexity: O(s1 + s2)
+```swift
+class Solution {
+    func checkInclusion(_ s1: String, _ s2: String) -> Bool {
+        var map = [Character: Int](), window = [Character: Int]()
+        var s2Array = [Character](s2)
+        var matched = 0
+        for i in s1 {
+            map[i, default: 0] += 1
+        }
+        
+        var left = 0
+        for right in 0..<s2Array.count {
+            let rightChar = s2Array[right]
+            if map[rightChar] != nil {
+                window[rightChar, default: 0] += 1
+                if window[rightChar] == map[rightChar] {
+                    matched += 1
+                }
+            }
+            
+            while matched == map.count {
+                if right - left + 1 == s1.count {
+                    return true
+                }
+                let leftChar = s2Array[left]
+                if map[leftChar] != nil {
+                    if window[leftChar] == map[leftChar] {
+                        matched -= 1
+                    }
+                    window[leftChar]! -= 1
+                }
+                
+                left += 1
+            }
+        }
+        
+        return false
+    }
+}
+```
+## 76. Minimum Window Substring
+- time complexity: O(s + t)
+- space complexity: O(t)
+```swift
+class Solution {
+    func minWindow(_ s: String, _ t: String) -> String {
+        if s.count == 0 || t.count == 0 || s.count < t.count {
+            return ""
+        }
+        
+        var sArray = [Character](s), tArray = [Character](t)
+        var map = [Character: Int]()
+        var start = 0, missingTypes = 0, resL = 0, resR = 0, minLength = sArray.count + 1
+        
+        for i in tArray {
+            if map[i] == nil {
+                map[i] = 0
+                missingTypes += 1
+            }
+            map[i]! += 1
+        }
+        
+        for end in 0..<sArray.count {
+            let rightChar = sArray[end]
+            if map[rightChar] != nil {
+                map[rightChar]! -= 1  
+                if map[rightChar] == 0 {
+                    missingTypes -= 1
+            }
+        }
+            
+        while missingTypes == 0 {
+            if end - start + 1 < minLength {
+                minLength = end - start + 1
+                resL = start
+                resR = end
+            }
+            let leftChar = sArray[start]
+            if map[leftChar] != nil {
+                map[leftChar]! += 1
+                if map[leftChar]! > 0 {
+                    missingTypes += 1
+                    }
+                }
+            start += 1
+            }
+        }
+        return minLength == sArray.count + 1 ? "" : String(sArray[resL...resR])
+
+    }
+}
+```
+## 509. Fibonacci Number
+### Top Down + Memorisation
+- time complexity: O(n)
+- space complexity: O(n)
+```swift
+class Solution {
+    var cache = [Int: Int]()
+    func fib(_ N: Int) -> Int {
+        if N <= 1 {
+            return N
+        }
+
+        if cache[N] != nil {
+            return cache[N]!
+        }
+
+        cache[N] = fib(N - 1) + fib(N - 2)
+        return cache[N]!
+    }
+}
+```
+### DP
+- time complexity: O(n)
+- space complexity: O(n)
+```swift
+class Solution {
+    func fib(_ N: Int) -> Int {
+        if N <= 1 {
+            return N
+        }
+        
+        var dp = Array(repeating: 0, count: N + 1)
+        dp[1] = 1
+        for i in 2...N {
+            dp[i] = dp[i - 1] + dp[i - 2]
+        }
+        return dp[N]
+    }
+}
+```
+### DP with O(1) space
+- time complexity: O(n)
+- space complexity: O(1)
+```swift
+class Solution {
+    func fib(_ N: Int) -> Int {
+        if N <= 1 {
+            return N
+        }
+
+        var dp1 = 0, dp2 = 1
+        for i in 2...N {
+            let temp = dp2
+            dp2 += dp1
+            dp1 = temp
+        }
+        return dp2
+    }
+}
+```
+## 95. Unique Binary Search Trees II
+- time complexity: O(nGn), there are Gn BST, each takes O(n) time to construct
+- space complexity: O(nGn)
+```swift
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     public var val: Int
+ *     public var left: TreeNode?
+ *     public var right: TreeNode?
+ *     public init() { self.val = 0; self.left = nil; self.right = nil; }
+ *     public init(_ val: Int) { self.val = val; self.left = nil; self.right = nil; }
+ *     public init(_ val: Int, _ left: TreeNode?, _ right: TreeNode?) {
+ *         self.val = val
+ *         self.left = left
+ *         self.right = right
+ *     }
+ * }
+ */
+class Solution {
+    func generateTrees(_ n: Int) -> [TreeNode?] {
+        if n == 0 {
+            return []
+        }
+        return generateTrees(1, n)
+    }
+    
+    func generateTrees(_ start: Int, _ end: Int) -> [TreeNode?] {
+        if start > end {
+            return [nil]
+        }
+        var allTrees = [TreeNode?]()
+        
+        for i in start...end {
+            let leftTrees = generateTrees(start, i - 1)
+            let rightTrees = generateTrees(i + 1, end)
+            
+            for l in leftTrees {
+                for r in rightTrees {
+                    let currentTree = TreeNode(i)
+                    currentTree.left = l
+                    currentTree.right = r
+                    allTrees.append(currentTree)
+                }
+            }
+        }
+        
+        return allTrees
+    }
+}
+```
+## 24. Swap Nodes in Pairs
+### Recursion
+- time complexity: O(n)
+- space complexity: O(n)
+```swift
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     public var val: Int
+ *     public var next: ListNode?
+ *     public init(_ val: Int) {
+ *         self.val = val
+ *         self.next = nil
+ *     }
+ * }
+ */
+class Solution {
+    func swapPairs(_ head: ListNode?) -> ListNode? {
+        if head == nil || head?.next == nil {
+            return head
+        }
+
+        let firstNode = head, secondNode = head?.next, nextHead = secondNode?.next
+        secondNode?.next = firstNode
+        firstNode?.next = swapPairs(nextHead)
+        return secondNode
+    }
+}
+```
+### Iteration
+- time complexity: O(n)
+- space complexity: O(1)
+```swift
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     public var val: Int
+ *     public var next: ListNode?
+ *     public init() { self.val = 0; self.next = nil; }
+ *     public init(_ val: Int) { self.val = val; self.next = nil; }
+ *     public init(_ val: Int, _ next: ListNode?) { self.val = val; self.next = next; }
+ * }
+ */
+class Solution {
+    func swapPairs(_ head: ListNode?) -> ListNode? {
+        let dummyHead: ListNode? = ListNode(-1)
+        dummyHead?.next = head
+        var prev = dummyHead
+        var cur = head
+
+        while cur != nil && cur?.next != nil {
+            let firstNode = cur, secondNode = cur?.next
+            firstNode?.next = secondNode?.next
+            secondNode?.next = firstNode
+            prev?.next = secondNode
+
+            prev = firstNode
+            cur = firstNode?.next
+        }
+
+        return dummyHead?.next
+    }
+}
+```
+## 344. Reverse String
+### Recursion
+- time complexity: O(n)
+- space complexity: O(n)
+```swift
+class Solution {
+    func reverseString(_ s: inout [Character]) {
+        reverse(&s, 0, s.count - 1)
+    }
+
+    func reverse(_ s: inout [Character], _ left: Int, _ right: Int) {
+        if left >= right {
+            return
+        }
+        s.swapAt(left, right)
+        reverse(&s, left + 1, right - 1)
+    }
+}
+```
+### Two Pointers
+- time complexity: O(n)
+- space complexity: O(1)
+```swift
+class Solution {
+    func reverseString(_ s: inout [Character]) {
+        var left = 0, right = s.count - 1
+        while left < right {
+            s.swapAt(left, right)
+            left += 1
+            right -= 1
+        }
+    }
+}
+```
 ## 92. Backpack (LintCode)
 - time complexity: O(mn)
 - space complexity: O(mn)
