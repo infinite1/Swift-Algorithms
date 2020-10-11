@@ -1,4 +1,437 @@
-# Swift-Algorithms
+# Swift-Algorithm
+## 93. Restore IP Addresses
+- time complexity: O(3^subStringCount)
+- space complexity: O(subStringCount)
+```swift
+class Solution {
+    func restoreIpAddresses(_ s: String) -> [String] {
+        let sArray = [Character](s)
+        let n = sArray.count
+        var res = [String]()
+
+        func backtrack(_ start: Int, _ tempList: inout [String]) {
+            if start == n && tempList.count == 4 {
+                res.append(tempList.joined(separator: "."))
+                return
+            }
+
+            if tempList.count == 4 && start <= n {
+                return
+            }
+
+            for i in 0..<3 {
+                if start + i >= sArray.count || (i != 0 && sArray[start] == "0") {
+                    continue
+                }
+                let subString = String(sArray[start...start+i])
+                if Int(subString)! > 255 {
+                    continue
+                }
+                tempList.append(subString)
+                backtrack(start + i + 1, &tempList)
+                tempList.popLast()
+            }
+        }
+
+        var tempList = [String]()
+        backtrack(0, &tempList)
+        return res
+    }
+}
+```
+## 5. Longest Palindromic Substring
+- time complexity: O(n^2)
+- space complexity: O(n^2)
+```swift
+class Solution {
+    func longestPalindrome(_ s: String) -> String {
+        var sArray = [Character](s)
+        if sArray.isEmpty {
+            return ""
+        }
+
+        var begin = 0, maxLength = 0
+        let n = sArray.count
+        var dp = Array(repeating: Array(repeating: false, count: n), count: n)
+        for right in 0..<n {
+            for left in 0...right {
+                if sArray[left] == sArray[right] && (right - left <= 2 || dp[left + 1][right - 1]) {
+                    dp[left][right] = true
+                    if right - left + 1 > maxLength {
+                        maxLength = right - left + 1
+                        begin = left
+                    }
+                }
+            }
+        }
+        return String(sArray[begin..<begin+maxLength])
+    }
+}
+```
+## 131. Palindrome Partitioning
+### Backtrack
+- time complexity: O(n\*2^n)
+- space complexity: O(n)
+```swift
+class Solution {
+    func partition(_ s: String) -> [[String]] {
+        var sArray = [Character](s)
+        var res = [[String]]()
+        if sArray.isEmpty {
+            return res
+        }
+
+        func backtrack(_ start: Int, _ tempList: inout [String]) {
+            if start == sArray.count {
+                res.append(tempList)
+                return
+            }
+
+            for i in start..<sArray.count {
+                if !checkPalindrome(start, i) {
+                    continue
+                }
+                tempList.append(String(sArray[start...i]))
+                backtrack(i + 1, &tempList)
+                tempList.popLast()
+            }
+        }
+
+        func checkPalindrome(_ left: Int, _ right: Int) -> Bool {
+            var left = left, right = right
+            while left < right {
+                if sArray[left] != sArray[right] {
+                    return false
+                }
+                left += 1
+                right -= 1
+            }
+            return true
+        }
+
+        var tempList = [String]()
+        backtrack(0, &tempList)
+        return res
+    }
+}
+```
+### Optimised Backtrack with DP
+- time complexity: O(2^n)
+- space complexity: O(n^2)
+```swift
+class Solution {
+    func partition(_ s: String) -> [[String]] {
+        var sArray = [Character](s)
+        var res = [[String]]()
+        let n = sArray.count
+        if sArray.isEmpty {
+            return res
+        }
+        var dp = Array(repeating: Array(repeating: false, count: n), count: n)
+
+        func backtrack(_ start: Int, _ tempList: inout [String]) {
+            if start == sArray.count {
+                res.append(tempList)
+                return
+            }
+
+            for i in start..<sArray.count {
+                if !dp[start][i] {
+                    continue
+                }
+                tempList.append(String(sArray[start...i]))
+                backtrack(i + 1, &tempList)
+                tempList.popLast()
+            }
+        }
+
+        func fillInDPTable(){
+            for right in 0..<n {
+                for left in 0...right {
+                    if sArray[left] == sArray[right] && (right - left <= 2 || dp[left + 1][right - 1]) {
+                        dp[left][right] = true
+                    }
+                }
+            }
+        }
+
+        fillInDPTable()
+        var tempList = [String]()
+        backtrack(0, &tempList)
+        return res
+    }
+}
+```
+## 17. Letter Combinations of a Phone Number
+- time complexity: O(3^m\*4^n), where m is the number of three letters digits and n is the number of four letters digits
+- space complexity: O(m + n)
+```swift
+class Solution {
+    func letterCombinations(_ digits: String) -> [String] {
+        if digits.count == 0 {
+            return []
+        }
+        var digitArray = [Character](digits)
+        var dict: [Character: [Character]] = ["2": ["a", "b", "c"], "3": ["d", "e", "f"], "4": ["g", "h", "i"], "5": ["j", "k", "l"],
+        "6": ["m", "n", "o"], "7": ["p", "q", "r", "s"], "8": ["t", "u", "v"], "9": ["w", "x", "y", "z"]]
+        var res = [String]()
+
+        func backtrack(_ pos: Int, _ tempList: inout [Character]) {
+            if pos == digitArray.count {
+                res.append(String(tempList))
+                return
+            }
+            let digit = digitArray[pos]
+            let letters = dict[digit]!
+            for i in 0..<letters.count {
+                tempList.append(letters[i])
+                backtrack(pos + 1, &tempList)
+                tempList.popLast()
+            }
+        }
+
+        var tempList = [Character]()
+        backtrack(0, &tempList)
+        return res
+    }
+}
+```
+## 39. Combination Sum
+- time complexity: O(2^n)
+- space complexity: O(target)
+```swift
+class Solution {
+    func combinationSum(_ candidates: [Int], _ target: Int) -> [[Int]] {
+        if candidates.isEmpty {
+            return []
+        }
+
+        var res = [[Int]]()
+        var sortedNums = candidates.sorted()
+
+        func backtrack(_ pos: Int, _ tempSum: Int, _ tempList: inout [Int]) {
+            if tempSum == target {
+                res.append(tempList)
+                return
+            }
+
+            if tempSum > target {
+                return
+            }
+
+            for i in pos..<sortedNums.count {
+                tempList.append(sortedNums[i])
+                backtrack(i, tempSum + sortedNums[i], &tempList)
+                tempList.popLast()
+            }
+        }
+
+        var tempList = [Int]()
+        backtrack(0, 0, &tempList)
+        return res
+    }
+}
+```
+## 47. Permutations II
+- time complexity: O(n!)
+- space complexity: O(n)
+```swift
+class Solution {
+    func permuteUnique(_ nums: [Int]) -> [[Int]] {
+        var res = [[Int]]()
+        var sortedNums = nums.sorted()
+        var visited = Array(repeating: false, count: nums.count)
+
+        func backtrack(_ track: inout [Int]) {
+            if track.count == sortedNums.count {
+                res.append(track)
+                return
+            }
+
+            for i in 0..<sortedNums.count {
+                if visited[i] || (i > 0 && sortedNums[i] == sortedNums[i - 1] && !visited[i - 1]) {
+                    continue
+                }
+                visited[i] = true
+                track.append(sortedNums[i])
+                backtrack(&track)
+                visited[i] = false
+                track.popLast()
+            }
+        }
+
+        var track = [Int]()
+        backtrack(&track)
+        return res
+    }
+}
+```
+## 46. Permutations
+- time complexity: O(n!)
+- space complexity: O(n), without considering results space
+```swift
+class Solution {
+    func permute(_ nums: [Int]) -> [[Int]] {
+        var res = [[Int]]()
+        var visited = Array(repeating: false, count: nums.count)
+
+        func backtrack(_ track: inout [Int]) {
+            if track.count == nums.count {
+                res.append(track)
+                return
+            }
+
+            for i in 0..<nums.count {
+                if visited[i] {
+                    continue
+                }
+                visited[i] = true
+                track.append(nums[i])
+                backtrack(&track)
+                visited[i] = false
+                track.popLast()
+            }
+        }
+
+        var track = [Int]()
+        backtrack(&track)
+        return res
+    }
+}
+```
+## 90. Subsets II
+- time complexity: O(2^n)
+- space complexity: O(n)
+```swift
+class Solution {
+    func subsetsWithDup(_ nums: [Int]) -> [[Int]] {
+        var res = [[Int]]()
+        var sortedNums = nums.sorted()
+        
+        func backtrack(_ pos: Int, _ track: inout [Int]) {
+            res.append(track)
+            for i in pos..<sortedNums.count {
+                if i > pos && sortedNums[i] == sortedNums[i - 1] {
+                    continue
+                }
+                track.append(sortedNums[i])
+                backtrack(i + 1, &track)
+                track.popLast()
+            }
+        }
+        
+        var tempList = [Int]()
+        backtrack(0, &tempList)
+        return res
+    }
+}
+```
+## 78. Subsets
+- time complexity: O(2^n)
+- space complexity: O(n)
+```swift
+class Solution {
+    func subsets(_ nums: [Int]) -> [[Int]] {
+        var res = [[Int]]()
+        
+        func backtrack(_ pos: Int, _ track: inout [Int]) {
+            res.append(track)
+            for i in pos..<nums.count {
+                track.append(nums[i])
+                backtrack(i + 1, &track)
+                track.popLast()
+            }
+        }
+        
+        var tempList = [Int]()
+        backtrack(0, &tempList)
+        return res
+    } 
+}
+```
+## 450. Delete Node in a BST
+- time complexity: O(n)
+- space complexity: O(n)
+```swift
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     public var val: Int
+ *     public var left: TreeNode?
+ *     public var right: TreeNode?
+ *     public init() { self.val = 0; self.left = nil; self.right = nil; }
+ *     public init(_ val: Int) { self.val = val; self.left = nil; self.right = nil; }
+ *     public init(_ val: Int, _ left: TreeNode?, _ right: TreeNode?) {
+ *         self.val = val
+ *         self.left = left
+ *         self.right = right
+ *     }
+ * }
+ */
+class Solution {
+    func deleteNode(_ root: TreeNode?, _ key: Int) -> TreeNode? {        
+        guard let root = root else {
+            return nil/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     public var val: Int
+ *     public var left: TreeNode?
+ *     public var right: TreeNode?
+ *     public init() { self.val = 0; self.left = nil; self.right = nil; }
+ *     public init(_ val: Int) { self.val = val; self.left = nil; self.right = nil; }
+ *     public init(_ val: Int, _ left: TreeNode?, _ right: TreeNode?) {
+ *         self.val = val
+ *         self.left = left
+ *         self.right = right
+ *     }
+ * }
+ */
+class Solution {
+    func isBalanced(_ root: TreeNode?) -> Bool {
+        if root == nil {
+            return true
+        }
+
+        if abs(height(root?.left) - height(root?.right)) > 1 {
+            return false
+        }
+
+        return isBalanced(root?.left) && isBalanced(root?.right)
+    }
+
+    func height(_ root: TreeNode?) -> Int {
+        if root == nil {
+            return 0
+        }
+
+        return max(height(root?.left), height(root?.right)) + 1
+    }
+}
+        }
+        
+        if root.val > key {
+            root.left = deleteNode(root.left, key)
+        } else if root.val < key {
+            root.right = deleteNode(root.right, key)
+        } else {
+            if root.left == nil {
+                return root.right
+            } else if root.right == nil {
+                return root.left
+            } else {
+                var node = root.right
+                while node?.left != nil {
+                    node = node?.left
+                }
+                node?.left = root.left
+                return root.right
+            }
+        }
+        
+        return root
+    }
+}
+```
 ## 3. Longest Substring Without Repeating Characters
 - time complexity: O(n)
 - space complexity: O(K), K is number of distinct characters
@@ -3037,8 +3470,8 @@ class Solution {
 ```
 ## 701. Insert into a Binary Search Tree
 ### Recursion
-- time complexity: O(H), average O(logN), worst O(N)
-- space complexity: O(H), average O(logN), worst O(N)
+- time complexity: O(n)
+- space complexity: O(n)
 ```swift
 /**
  * Definition for a binary tree node.
@@ -3057,12 +3490,14 @@ class Solution {
  */
 class Solution {
     func insertIntoBST(_ root: TreeNode?, _ val: Int) -> TreeNode? {
-        guard let root = root else { return TreeNode(val) }
+        if root == nil {
+            return TreeNode(val)
+        }
 
-        if val > root.val {
-            root.right = insertIntoBST(root.right, val)
+        if root!.val > val {
+            root?.left = insertIntoBST(root?.left, val)
         } else {
-            root.left = insertIntoBST(root.left, val)
+            root?.right = insertIntoBST(root?.right, val)
         }
 
         return root
@@ -3070,7 +3505,7 @@ class Solution {
 }
 ```
 ### Iteration
-- time complexity: O(H), average O(logN), worst O(N)
+- time complexity: O(n)
 - space complexity: O(1)
 ```swift
 /**
@@ -3090,28 +3525,30 @@ class Solution {
  */
 class Solution {
     func insertIntoBST(_ root: TreeNode?, _ val: Int) -> TreeNode? {
-        var cur = root
-        let toAdd = TreeNode(val)
+        if root == nil {
+            return TreeNode(val)
+        }
 
+        var cur = root
         while cur != nil {
-            if val > cur!.val {
-                if let right = cur?.right {
-                    cur = right
-                } else {
-                    cur?.right = toAdd
-                    return root
-                }
-            } else {
+            if cur!.val > val {
                 if let left = cur?.left {
                     cur = left
                 } else {
-                    cur?.left = toAdd
-                    return root
+                    cur?.left = TreeNode(val)
+                    break
+                }
+            } else {
+                if let right = cur?.right {
+                    cur = right
+                } else {
+                    cur?.right = TreeNode(val)
+                    break
                 }
             }
         }
-
-        return toAdd
+        
+        return root
     }
 }
 ```
@@ -3135,21 +3572,25 @@ class Solution {
  */
 class Solution {
     func isValidBST(_ root: TreeNode?) -> Bool {
-        return helper(root, Int.min, Int.max)
+        return isValidBST(root, Int.min, Int.max)
     }
 
-    func helper(_ root: TreeNode?, _ low: Int, _ high: Int) -> Bool {
-        guard let root = root else { return true }
+    func isValidBST(_ root: TreeNode?, _ low: Int, _ high: Int) -> Bool {
+        guard let root = root else {
+            return true
+        }
 
         if root.val <= low || root.val >= high {
             return false
         }
 
-        return helper(root.left, low, root.val) && helper(root.right, root.val, high)
+        return isValidBST(root.left, low, root.val) && isValidBST(root.right, root.val, high)
     }
 }
 ```
 ### Inorder iteration
+- time complexity: O(n)
+- space complexity: O(n)
 ```swift
 /**
  * Definition for a binary tree node.
@@ -3166,10 +3607,9 @@ class Solution {
  */
 class Solution {
     func isValidBST(_ root: TreeNode?) -> Bool {
-        var root = root 
-
+        var root = root
         var stack = [TreeNode?]()
-        var inOrderPrev = Int.min
+        var inorderPrev = Int.min
 
         while !stack.isEmpty || root != nil {
             while root != nil {
@@ -3178,10 +3618,10 @@ class Solution {
             }
 
             let node = stack.removeLast()
-            if node!.val <= inOrderPrev {
+            if node!.val <= inorderPrev {
                 return false
             }
-            inOrderPrev = node!.val
+            inorderPrev = node!.val
             root = node?.right
         }
 
@@ -3189,8 +3629,6 @@ class Solution {
     }
 }
 ```
-- time complexity: O(n)
-- space complexity: O(n)
 ## 103. Binary Tree Zigzag Level Order Traversal
 ### BFS
 - time complexity: O(n)
@@ -3419,16 +3857,10 @@ class Solution {
     }
 }
 ```
-
-
-
 ## 110. Balanced Binary Tree
-
 ### top-down recursion
-
-time complexity: O(n^2), height会被重复调用因此耗时较高
-space complexity: O(h) 
-
+- time complexity: O(n^2), height会被重复调用因此耗时较高
+- space complexity: O(n) 
 ```swift
 /**
  * Definition for a binary tree node.
@@ -3436,58 +3868,74 @@ space complexity: O(h)
  *     public var val: Int
  *     public var left: TreeNode?
  *     public var right: TreeNode?
- *     public init(_ val: Int) {
+ *     public init() { self.val = 0; self.left = nil; self.right = nil; }
+ *     public init(_ val: Int) { self.val = val; self.left = nil; self.right = nil; }
+ *     public init(_ val: Int, _ left: TreeNode?, _ right: TreeNode?) {
  *         self.val = val
- *         self.left = nil
- *         self.right = nil
+ *         self.left = left
+ *         self.right = right
  *     }
  * }
  */
 class Solution {
     func isBalanced(_ root: TreeNode?) -> Bool {
-        guard let root = root else { return true }
-        return (abs(getHeight(root.left) - getHeight(root.right)) <= 1) && isBalanced(root.left) && isBalanced(root.right)
-    }
+        if root == nil {
+            return true
+        }
 
-    func getHeight(_ root: TreeNode?) -> Int {
-        guard let root = root else { return 0 }
-        return 1 + max(getHeight(root.left), getHeight(root.right))
-    }
-}
-```
+        if abs(height(root?.left) - height(root?.right)) > 1 {
+            return false
+        }
 
-### bottom-up recursion
-
-time complexity: O(n)
-
-space complexity: O(h) 
-
-```swift
-/**
- * Definition for a binary tree node.
- * public class TreeNode {
- *     public var val: Int
- *     public var left: TreeNode?
- *     public var right: TreeNode?
- *     public init(_ val: Int) {
- *         self.val = val
- *         self.left = nil
- *         self.right = nil
- *     }
- * }
- */
-class Solution {
-    func isBalanced(_ root: TreeNode?) -> Bool {
-        return height(root) >= 0
+        return isBalanced(root?.left) && isBalanced(root?.right)
     }
 
     func height(_ root: TreeNode?) -> Int {
-        guard let root = root else { return 0 }
-        let left = height(root.left), right = height(root.right)
-        if left == -1 || right == -1 || abs(left - right) > 1 {
+        if root == nil {
+            return 0
+        }
+
+        return max(height(root?.left), height(root?.right)) + 1
+    }
+}
+```
+### bottom-up recursion
+- time complexity: O(n)
+- space complexity: O(n) 
+```swift
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     public var val: Int
+ *     public var left: TreeNode?
+ *     public var right: TreeNode?
+ *     public init() { self.val = 0; self.left = nil; self.right = nil; }
+ *     public init(_ val: Int) { self.val = val; self.left = nil; self.right = nil; }
+ *     public init(_ val: Int, _ left: TreeNode?, _ right: TreeNode?) {
+ *         self.val = val
+ *         self.left = left
+ *         self.right = right
+ *     }
+ * }
+ */
+class Solution {
+    func isBalanced(_ root: TreeNode?) -> Bool {
+        return height(root) != -1
+    }
+    
+    func height(_ root: TreeNode?) -> Int {
+        if root == nil {
+            return 0
+        }
+        
+        let left = height(root?.left)
+        let right = height(root?.right)
+        
+        if (left == -1 || right == -1 || abs(left - right) > 1) {
             return -1
         }
-        return 1 + max(left, right)
+        
+        return max(left, right) + 1
     }
 }
 ```
