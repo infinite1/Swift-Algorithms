@@ -1,4 +1,287 @@
-# Swift-Algorithm
+# LeetCode-Swift-Algorithms
+## 844. Backspace String Compare
+### Rebuild String
+- time complexity: O(m + n)
+- space complexity: O(m + n)
+```swift
+class Solution {
+    func backspaceCompare(_ S: String, _ T: String) -> Bool {
+        return build(S) == build(T)
+    }
+
+    func build(_ str: String) -> String {
+        var s = [Character]()
+        for i in str {
+            if i != "#" {
+                s.append(i)
+            } else {
+                s.popLast()
+            }
+        }
+        return String(s)
+    }
+}
+```
+### Two Pointer
+- time complexity: O(m + n)
+- space complexity: O(1)
+```swift
+class Solution {
+    func backspaceCompare(_ S: String, _ T: String) -> Bool {
+        var sArray = [Character](S), tArray = [Character](T)
+        var i = sArray.count - 1, j = tArray.count - 1
+        var skipS = 0, skipT = 0
+        while i >= 0 || j >= 0 {
+            while i >= 0 {
+                if sArray[i] == "#" {
+                    skipS += 1
+                    i -= 1
+                } else if skipS > 0 {
+                    i -= 1
+                    skipS -= 1
+                } else {
+                    break
+                }
+            }
+
+            while j >= 0 {
+                if tArray[j] == "#" {
+                    skipT += 1
+                    j -= 1
+                } else if skipT > 0 {
+                    j -= 1
+                    skipT -= 1
+                } else {
+                    break
+                }
+            }
+
+            if i >= 0 && j >= 0 && sArray[i] != tArray[j] {
+                return false
+            }
+
+            if (i >= 0) != (j >= 0) {
+                return false
+            }
+
+            i -= 1
+            j -= 1
+        }
+
+        return true
+    }
+}
+```
+## 20. Valid Parentheses
+- time complexity: O(n)
+- space complexity: O(n)
+```swift
+class Solution {
+    func isValid(_ s: String) -> Bool {
+        if s.count % 2 == 1 {
+            return false
+        }
+        var stack = [Character]()
+        var dict: [Character: Character] = [")": "(", "}": "{", "]": "["]
+        for c in s {
+            if c == "(" || c == "{" || c == "[" {
+                stack.append(c)
+            } else {
+                if !stack.isEmpty && stack.last! == dict[c]! {
+                    stack.popLast()
+                } else {
+                    return false
+                }
+            }
+        }
+
+        return stack.isEmpty
+    }
+}
+```
+## 876. Middle of the Linked List
+### Use Array
+- time complexity: O(n)
+- space complexity: O(n)
+```swift
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     public var val: Int
+ *     public var next: ListNode?
+ *     public init(_ val: Int) {
+ *         self.val = val
+ *         self.next = nil
+ *     }
+ * }
+ */
+class Solution {
+    func middleNode(_ head: ListNode?) -> ListNode? {
+        var arr = [ListNode?]()
+        var cur = head
+        while cur != nil {
+            arr.append(cur)
+            cur = cur?.next
+        }
+        return arr[arr.count / 2]
+    }
+}
+```
+### Two Pass
+- time complexity: O(n)
+- space complexity: O(1)
+```swift
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     public var val: Int
+ *     public var next: ListNode?
+ *     public init(_ val: Int) {
+ *         self.val = val
+ *         self.next = nil
+ *     }
+ * }
+ */
+class Solution {
+    func middleNode(_ head: ListNode?) -> ListNode? {
+        var count = 0
+        var cur = head
+        while cur != nil {
+            count += 1
+            cur = cur?.next
+        }
+        cur = head
+        var i = 0
+        while i < count / 2 {
+            cur = cur?.next
+            i += 1
+        }
+        return cur
+    }
+}
+```
+### Two Pointer
+- time complexity: O(n)
+- space complexity: O(1)
+```swift
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     public var val: Int
+ *     public var next: ListNode?
+ *     public init(_ val: Int) {
+ *         self.val = val
+ *         self.next = nil
+ *     }
+ * }
+ */
+class Solution {
+    func middleNode(_ head: ListNode?) -> ListNode? {
+        var slow = head, fast = head?.next
+        while fast != nil {
+            slow = slow?.next
+            fast = fast?.next?.next
+        } 
+        return slow
+    }
+}
+```
+## 1. Two Sum
+- time complexity: O(n)
+- space complexity: O(n)
+```swift
+class Solution {
+    func twoSum(_ nums: [Int], _ target: Int) -> [Int] {
+        var dict = [Int: Int]()
+        for i in 0..<nums.count {
+            if dict[target - nums[i]] != nil {
+                return [dict[target - nums[i]]!, i]
+            } else {
+                dict[nums[i]] = i
+            }
+        }
+        return [-1, -1]
+    }
+}
+```
+## 114. Flatten Binary Tree to Linked List
+- time complexity: O(n)
+- space complexity: O(n)
+```swift
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     public var val: Int
+ *     public var left: TreeNode?
+ *     public var right: TreeNode?
+ *     public init() { self.val = 0; self.left = nil; self.right = nil; }
+ *     public init(_ val: Int) { self.val = val; self.left = nil; self.right = nil; }
+ *     public init(_ val: Int, _ left: TreeNode?, _ right: TreeNode?) {
+ *         self.val = val
+ *         self.left = left
+ *         self.right = right
+ *     }
+ * }
+ */
+class Solution {
+    func flatten(_ root: TreeNode?) {
+        if root == nil {
+            return
+        }
+
+        flatten(root?.left)
+        flatten(root?.right)
+
+        let left = root?.left
+        let right = root?.right
+
+        // move left subtree to right side
+        root?.right = left
+        root?.left = nil
+
+        // connect flatten right subtree to the end of left subtree
+        var cur = root
+        while cur?.right != nil {
+            cur = cur?.right
+        }
+        cur?.right = right
+    }
+}
+```
+## 226. Invert Binary Tree
+- time complexity: O(n)
+- space complexity: O(n)
+```swift
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     public var val: Int
+ *     public var left: TreeNode?
+ *     public var right: TreeNode?
+ *     public init(_ val: Int) {
+ *         self.val = val
+ *         self.left = nil
+ *         self.right = nil
+ *     }
+ * }
+ */
+class Solution {
+    func invertTree(_ root: TreeNode?) -> TreeNode? {
+        if root == nil {
+            return nil
+        }
+
+        var temp = root?.left
+        root?.left = root?.right
+        root?.right = temp
+
+        invertTree(root?.left)
+        invertTree(root?.right)
+
+        return root
+    }
+}
+```
 ## 93. Restore IP Addresses
 - time complexity: O(3^subStringCount)
 - space complexity: O(subStringCount)
@@ -1566,28 +1849,30 @@ class Solution {
 ```swift
 class Solution {
     func sortArray(_ nums: [Int]) -> [Int] {
-        var arr = nums
-        quickSort(&arr, 0, arr.count - 1)
-        return arr
+        var nums = nums
+        quickSort(&nums, 0, nums.count - 1)
+        return nums
     }
 
-    func quickSort(_ arr: inout [Int], _ left: Int, _ right: Int) {
-        if left >= right { return }
-        let partitionIndex = partition(&arr, left, right)
-        quickSort(&arr, left, partitionIndex - 1)
-        quickSort(&arr, partitionIndex + 1, right)
+    func quickSort(_ nums: inout [Int], _ left: Int, _ right: Int) {
+        if left >= right {
+            return
+        }
+        let p = partition(&nums, left, right)
+        quickSort(&nums, left, p - 1)
+        quickSort(&nums, p + 1, right)
     }
 
-    func partition(_ arr: inout [Int], _ left: Int, _ right: Int) -> Int {
+    func partition(_ nums: inout [Int], _ left: Int, _ right: Int) -> Int {
+        var pivot = nums[right]
         var i = left
-        let pivot = arr[right]
         for j in left..<right {
-            if arr[j] < pivot {
-                arr.swapAt(i, j)
+            if nums[j] < pivot {
+                nums.swapAt(i, j)
                 i += 1
             }
         }
-        arr.swapAt(i, right)
+        nums.swapAt(i, right)
         return i
     }
 }
@@ -2284,49 +2569,6 @@ class Solution {
 }
 ```
 ## 232. Implement Queue using Stacks
-### Use one stack and Swift API
-- push: O(1)
-- pop: O(n)
-```swift
-class MyQueue {
-
-    /** Initialize your data structure here. */
-    var queue: [Int]
-
-    init() {
-        queue = []
-    }
-    
-    /** Push element x to the back of queue. */
-    func push(_ x: Int) {
-        queue.append(x)
-    }
-    
-    /** Removes the element from in front of queue and returns that element. */
-    func pop() -> Int {
-        queue.removeFirst()
-    }
-    
-    /** Get the front element. */
-    func peek() -> Int {
-        queue[0]
-    }
-    
-    /** Returns whether the queue is empty. */
-    func empty() -> Bool {
-        queue.isEmpty
-    }
-}
-
-/**
- * Your MyQueue object will be instantiated and called as such:
- * let obj = MyQueue()
- * obj.push(x)
- * let ret_2: Int = obj.pop()
- * let ret_3: Int = obj.peek()
- * let ret_4: Bool = obj.empty()
- */
-```
 ### Use two stacks-O(n) push, O(1) pop
 - push: O(n)
 - pop: O(1)
@@ -2334,38 +2576,38 @@ class MyQueue {
 class MyQueue {
 
     /** Initialize your data structure here. */
-    var s1: [Int]
-    var s2: [Int]
-    
+    var stack1: [Int]
+    var stack2: [Int]
+
     init() {
-        s1 = []
-        s2 = []
+        stack1 = [Int]()
+        stack2 = [Int]()    // store all queue elements
     }
     
     /** Push element x to the back of queue. */
     func push(_ x: Int) {
-        while !s1.isEmpty {
-            s2.append(s1.removeLast())
-        } 
-        s2.append(x)
-        while !s2.isEmpty {
-            s1.append(s2.removeLast())
-        } 
+        while !stack2.isEmpty {
+            stack1.append(stack2.removeLast())
+        }
+        stack2.append(x)
+        while !stack1.isEmpty {
+            stack2.append(stack1.removeLast())
+        }
     }
     
     /** Removes the element from in front of queue and returns that element. */
     func pop() -> Int {
-        s1.removeLast()
+        return stack2.removeLast()
     }
     
     /** Get the front element. */
     func peek() -> Int {
-        s1.last!
+        return stack2.last!
     }
     
     /** Returns whether the queue is empty. */
     func empty() -> Bool {
-        s1.isEmpty
+        return stack2.isEmpty
     }
 }
 
@@ -2380,49 +2622,49 @@ class MyQueue {
 ```
 ### Two Stack - O(1) push, Amortized O(1) pop
 - push: O(1)
-- pop: Amortized O(1), worst case O(n)
+- pop: Amortized O(1)
 ```swift
 class MyQueue {
 
     /** Initialize your data structure here. */
-    var s1: [Int]
-    var s2: [Int]
+    var stack1: [Int]
+    var stack2: [Int]
     var front: Int?
-    
+
     init() {
-        s1 = []
-        s2 = []
+        stack1 = [Int]()
+        stack2 = [Int]()
     }
     
     /** Push element x to the back of queue. */
     func push(_ x: Int) {
-        if s1.isEmpty {
+        if stack1.isEmpty {
             front = x
         }
-        s1.append(x)
+        stack1.append(x)
     }
     
     /** Removes the element from in front of queue and returns that element. */
     func pop() -> Int {
-        if s2.isEmpty {
-            while !s1.isEmpty {
-                s2.append(s1.removeLast())
+        if stack2.isEmpty {
+            while !stack1.isEmpty {
+                stack2.append(stack1.removeLast())
             }
         }
-        return s2.removeLast()
+        return stack2.removeLast()
     }
     
     /** Get the front element. */
     func peek() -> Int {
-        if !s2.isEmpty {
-            return s2.last!
+        if !stack2.isEmpty {
+            return stack2.last!
         }
         return front!
     }
     
     /** Returns whether the queue is empty. */
     func empty() -> Bool {
-        s1.isEmpty && s2.isEmpty
+        return stack1.isEmpty && stack2.isEmpty
     }
 }
 
@@ -2433,7 +2675,7 @@ class MyQueue {
  * let ret_2: Int = obj.pop()
  * let ret_3: Int = obj.peek()
  * let ret_4: Bool = obj.empty()
- */
+ */ 
 ```
 ## 84. Largest Rectangle in Histogram
 ### Stack
@@ -2888,140 +3130,36 @@ class Solution {
 }
 ```
 ## 155. Min Stack
-### Stack of (Value, Minimum) Pairs
-- time complexity: O(1) for all operations
-- space complexity: O(n)
-```swift
-
-class MinStack {
-
-    /** initialize your data structure here. */
-    var stack = [[Int]]()
-    
-    init() {
-        
-    }
-    
-    func push(_ x: Int) {
-        if stack.isEmpty {
-            stack.append([x, x])
-        } else {
-            let currentMin = stack.last![1]
-            stack.append([x, min(x, currentMin)])
-        }
-    }
-    
-    func pop() {
-        stack.removeLast()
-    }
-    
-    func top() -> Int {
-        return stack.last![0]
-    }
-    
-    func getMin() -> Int {
-        return stack.last![1]
-    }
-}
-
-/**
- * Your MinStack object will be instantiated and called as such:
- * let obj = MinStack()
- * obj.push(x)
- * obj.pop()
- * let ret_3: Int = obj.top()
- * let ret_4: Int = obj.getMin()
- */
-```
-### Use Two Stacks
-注意stack有重复元素时最小值会出现bug，因此需要把重复的最小值也推入minElem中
 - time complexity: O(1) for all operations
 - space complexity: O(n)
 ```swift
 class MinStack {
 
     /** initialize your data structure here. */
-    var arr = [Int]()
-    var minElem = [Int]()
+    var arr: [Int]
+    var minValues: [Int]
 
     init() {
+        arr = [Int]()
+        minValues = [Int.max]
     }
     
     func push(_ x: Int) {
         arr.append(x)
-        if minElem.isEmpty || x <= minElem.last! {
-            minElem.append(x)
-        }
+        minValues.append(min(x, minValues.last!))
     }
     
     func pop() {
-        if minElem.last! == arr.last! {
-            minElem.removeLast()
-        }
-        arr.removeLast()
+        arr.popLast()
+        minValues.popLast()
     }
     
     func top() -> Int {
-        return arr.last!
+        arr.last!
     }
     
     func getMin() -> Int {
-        return minElem.last!
-    }
-}
-
-/**
- * Your MinStack object will be instantiated and called as such:
- * let obj = MinStack()
- * obj.push(x)
- * obj.pop()
- * let ret_3: Int = obj.top()
- * let ret_4: Int = obj.getMin()
- */
-```
-### Improved two stacks
-在记录最小值的stack中使用pairs，避免了重复出现的最小值
-- time complexity: O(1) for all operations
-- space complexity: O(n)
-```swift
-class MinStack {
-
-    /** initialize your data structure here. */
-    var arr = [Int]()
-    var minElem = [[Int]]()
-
-    init() {
-        
-    }
-    
-    func push(_ x: Int) {
-        arr.append(x)
-        if minElem.isEmpty || x < minElem.last![0] {
-            minElem.append([x, 1])
-        } else if x == minElem.last![0] {
-            minElem[minElem.count - 1][1] += 1
-        }
-    }
-    
-    func pop() {
-        if minElem.last![0] == arr.last! {
-            minElem[minElem.count - 1][1] -= 1
-        }
-        
-        // remove elem if count is 0
-        if minElem.last![1] == 0 {
-            minElem.removeLast()
-        }
-        
-        arr.removeLast()
-    }
-    
-    func top() -> Int {
-        return arr.last!
-    }
-    
-    func getMin() -> Int {
-        return minElem.last![0]
+        return minValues.last!
     }
 }
 
@@ -4907,11 +5045,50 @@ class Solution {
 
 
 ## 116. Populating Next Right Pointers in Each Node
+### Recursion
+- time complexity: O(n)
+- space complexity: O(logn)
+```swift
+/**
+ * Definition for a Node.
+ * public class Node {
+ *     public var val: Int
+ *     public var left: Node?
+ *     public var right: Node?
+ *	   public var next: Node?
+ *     public init(_ val: Int) {
+ *         self.val = val
+ *         self.left = nil
+ *         self.right = nil
+ *         self.next = nil
+ *     }
+ * }
+ */
 
-time complexity: O(n)
+class Solution {
+    func connect(_ root: Node?) -> Node? {
+        if root == nil {
+            return nil
+        }
+        connect(root?.left, root?.right)
+        return root
+    }
 
-space complexity: O(n), depending on the level that have max number of nodes
+    func connect(_ node1: Node?, _ node2: Node?) {
+        if node1 == nil || node2 == nil {
+            return
+        }
 
+        node1?.next = node2
+        connect(node1?.left, node1?.right)
+        connect(node2?.left, node2?.right)
+        connect(node1?.right, node2?.left)
+    }
+}
+```
+### Level-Order Traversal
+- time complexity: O(n)
+- space complexity: O(n), depending on the level that have max number of nodes
 ```swift
 /**
  * Definition for a Node.
@@ -6209,7 +6386,7 @@ class MyLinkedList {
  * }
  */
 extension ListNode: Equatable {
-    public static func == (lhs: ListNode, rhs: ListNode) -> Bool {
+    public static func ==(lhs: ListNode, rhs: ListNode) -> Bool {
         return lhs === rhs
     }
 }
@@ -6224,15 +6401,17 @@ class Solution {
         if head == nil {
             return false
         }
-        var hashTable: Set<ListNode?> = []
+
+        var set = Set<ListNode?>()
         var cur = head
         while cur != nil {
-            if hashTable.contains(cur) {
+            if set.contains(cur) {
                 return true
             }
-            hashTable.insert(cur)
+            set.insert(cur)
             cur = cur?.next
         }
+
         return false
     }
 }
@@ -6265,7 +6444,7 @@ class Solution {
         }
         return false
     }
-}}
+}
 ```
 
 ## 142. Linked List Cycle II
@@ -6412,17 +6591,11 @@ class Solution {
     }
 }
 ```
-
 ## 19. Remove Nth Node From End of List
-
 ### Two Pass Algorithm
-
 先遍历得出链表的长度，再遍历删除（l - n + 1）个节点，*使用伪节点来避免讨论一些corner case，比如链表只有一个节点*。
-
-time complexity: O(L)
-
-space complexity: O(1)
-
+- time complexity: O(L)
+- space complexity: O(1)
 ```swift
 /**
  * Definition for singly-linked list.
@@ -6436,30 +6609,78 @@ space complexity: O(1)
  */
 class Solution {
     func removeNthFromEnd(_ head: ListNode?, _ n: Int) -> ListNode? {
-        var pesudoNode = ListNode(0)
-        pesudoNode.next = head
-        
-        var prev: ListNode? = pesudoNode
-        let length = getLength(head)
-        for _ in stride(from: 0, to: length-n, by: 1) {
-            prev = prev?.next
+        if head == nil {
+            return nil
         }
-        prev?.next = prev?.next?.next
-        return pesudoNode.next
+        
+        var dummyHead: ListNode? = ListNode()
+        var cur = dummyHead
+        dummyHead?.next = head
+        var length = getLength(head)
+        var i = 0
+        while i < length - n {
+            cur = cur?.next
+            i += 1
+        }
+
+        cur?.next = cur?.next?.next
+
+        return dummyHead?.next
     }
-    
-    private func getLength(_ head: ListNode?) -> Int {
+
+    func getLength(_ head: ListNode?) -> Int {
         var cur = head
         var count = 0
         while cur != nil {
-            cur = cur?.next
             count += 1
+            cur = cur?.next
         }
         return count
     }
 }
 ```
+### One Pass Algorithm
+- time complexity: O(L)
+- space complexity: O(1)
+```swift
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     public var val: Int
+ *     public var next: ListNode?
+ *     public init() { self.val = 0; self.next = nil; }
+ *     public init(_ val: Int) { self.val = val; self.next = nil; }
+ *     public init(_ val: Int, _ next: ListNode?) { self.val = val; self.next = next; }
+ * }
+ */
+class Solution {
+    func removeNthFromEnd(_ head: ListNode?, _ n: Int) -> ListNode? {
+        if head == nil {
+            return nil
+        }
 
+        var dummyHead: ListNode? = ListNode()
+        dummyHead?.next = head
+        var first = dummyHead, second = dummyHead
+
+        // move second n+1 steps
+        var i = 0
+        while i < n + 1 {
+            first = first?.next
+            i += 1
+        }
+
+        while first != nil {
+            second = second?.next
+            first = first?.next
+        }
+
+        second?.next = second?.next?.next
+
+        return dummyHead?.next
+    }
+}
+```
 ## 206. Reverse Linked List
 ### Recursion
 从head开始，将后面的链表看作已经排列好的链表，然后与head反转顺序。*每次递归调用后返回的都是链表的最后一个节点，或者说是反转链表的head*。
@@ -6479,15 +6700,15 @@ class Solution {
  */
 class Solution {
     func reverseList(_ head: ListNode?) -> ListNode? {
-        if head == nil || head?.next == nil {
+        if head?.next == nil || head == nil {
             return head
         }
 
-        var newHead = reverseList(head?.next)
+        let node = reverseList(head?.next)
         head?.next?.next = head
         head?.next = nil
 
-        return newHead
+        return node
     }
 }
 ```
@@ -6508,7 +6729,7 @@ class Solution {
  */
 class Solution {
     func reverseList(_ head: ListNode?) -> ListNode? {
-        if head == nil || head?.next == nil {
+        if head == nil {
             return head
         }
 
@@ -6742,8 +6963,8 @@ class Solution {
 ```
 ## 21. Merge Two Sorted Lists
 ### Recursion
-- time complexity: O(M+N)
-- space complexity: O(M+N)
+- time complexity: O(m+n)
+- space complexity: O(m+n)
 ```swift
 /**
  * Definition for singly-linked list.
@@ -6759,21 +6980,24 @@ class Solution {
     func mergeTwoLists(_ l1: ListNode?, _ l2: ListNode?) -> ListNode? {
         if l1 == nil {
             return l2
-        } else if l2 == nil {
+        } 
+        if l2 == nil {
             return l1
-        } else if l1!.val < l2!.val {
-            l1?.next = mergeTwoLists(l1?.next, l2)
-            return l1
+        }
+        var p1 = l1, p2 = l2 
+        if p1!.val <= p2!.val {
+            p1?.next = mergeTwoLists(p1?.next, p2)
+            return p1
         } else {
-            l2?.next = mergeTwoLists(l2?.next, l1)
-            return l2
+            p2?.next = mergeTwoLists(p1, p2?.next)
+            return p2
         }
     }
 }
 ```
 ### Iteration
 使用伪head节点来方便返回head
-- time complexity: O(M+N)
+- time complexity: O(m+n)
 - space complexity: O(1)
 ```swift
 /**
@@ -6788,10 +7012,10 @@ class Solution {
  */
 class Solution {
     func mergeTwoLists(_ l1: ListNode?, _ l2: ListNode?) -> ListNode? {
-        var dummyHead: ListNode? = ListNode(0), p1 = l1, p2 = l2, prev = dummyHead
-
+        var dummyHead: ListNode? = ListNode()
+        var p1 = l1, p2 = l2, prev = dummyHead
         while p1 != nil && p2 != nil {
-            if p1!.val < p2!.val {
+            if p1!.val <= p2!.val {
                 prev?.next = p1
                 prev = p1
                 p1 = p1?.next
@@ -6801,17 +7025,8 @@ class Solution {
                 p2 = p2?.next
             }
         }
-
-        // connect remaining nodes
-        if p1 != nil {
-            prev?.next = p1
-        }
-        if p2 != nil {
-            prev?.next = p2
-        }
-
+        prev?.next = p1 ?? p2
         return dummyHead?.next
     }
 }
 ```
-
