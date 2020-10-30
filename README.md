@@ -1,4 +1,377 @@
 # LeetCode-Swift-Algorithms
+## 416. Partition Equal Subset Sum
+### DP
+- time complexity: O(n\*sum)
+- space complexity: O(n\*sum)
+```swift
+class Solution {
+    func canPartition(_ nums: [Int]) -> Bool {
+        if nums.count == 1 {
+            return false
+        }
+
+        var sum = 0
+        for n in nums {
+            sum += n
+        }
+        if sum % 2 == 1 {
+            return false
+        }
+        
+        let n = nums.count, s = sum / 2
+        var dp = Array(repeating: Array(repeating: false, count: s + 1), count: n + 1)
+        for i in 0..<n {
+            dp[i][0] = true
+        }
+        for i in 1...n {
+            for j in 1...s {
+                if j - nums[i - 1] < 0 {
+                    dp[i][j] = dp[i - 1][j]
+                } else {
+                    dp[i][j] = dp[i - 1][j] || dp[i - 1][j - nums[i - 1]]
+                }
+            }
+        }
+        return dp[n][s]
+    }
+}
+```
+### DP + Compression
+- time complexity: O(n\*sum)
+- space complexity: O(sum)
+```swift
+class Solution {
+    func canPartition(_ nums: [Int]) -> Bool {
+        if nums.count == 1 {
+            return false
+        }
+
+        var sum = 0
+        for n in nums {
+            sum += n
+        }
+        if sum % 2 == 1 {
+            return false
+        }
+        
+        let n = nums.count, s = sum / 2
+        var dp = Array(repeating: false, count: s + 1)
+        dp[0] = true
+        for i in 0..<n {
+            for j in stride(from: s, through: 0, by: -1) {
+                if j - nums[i] < 0 {
+                    dp[j] = dp[j]
+                } else {
+                    dp[j] = dp[j] || dp[j - nums[i]]
+                }
+            }
+        }
+        return dp[s]
+    }
+}
+```
+## 53. Maximum Subarray
+### DP
+- time complexity: O(n)
+- space complexity: O(n)
+```swift
+class Solution {
+    func maxSubArray(_ nums: [Int]) -> Int {
+        if nums.isEmpty {
+            return 0
+        }
+
+        var n = nums.count
+        var dp = Array(repeating: nums[0], count: n)
+        for i in 1..<n {
+            dp[i] = max(dp[i - 1] + nums[i], nums[i])
+        }
+
+        var ans = Int.min
+        for i in 0..<n {
+            ans = max(ans, dp[i])
+        }
+
+        return ans
+    }
+}
+```
+### DP + Compression
+- time complexity: O(n)
+- space complexity: O(1)
+```swift
+class Solution {
+    func maxSubArray(_ nums: [Int]) -> Int {
+        if nums.isEmpty {
+            return 0
+        }
+        var n = nums.count
+        var dp0 = nums[0], dp1 = nums[0], ans = nums[0]
+        for i in 1..<n {
+            dp1 = max(dp0 + nums[i], nums[i])
+            dp0 = dp1
+            ans = max(ans, dp1)
+        }
+        return ans
+    }
+}
+```
+## 494. Target Sum
+### Backtracking
+- time complexity: O(2^n), where n is length of noms array
+- space complexity: O(n)
+```swift
+class Solution {
+    func findTargetSumWays(_ nums: [Int], _ S: Int) -> Int {
+        if nums.isEmpty {
+            return 0
+        }
+
+        var results = 0
+
+        func backtrack(_ pos: Int, _ leftSum: inout Int) {
+            if pos == nums.count {
+                if leftSum == 0 {
+                    results += 1
+                }
+                return
+            }
+
+            for s in ["+", "-1"] {
+                if s == "+" {
+                    leftSum -= nums[pos]
+                    backtrack(pos + 1, &leftSum)
+                    leftSum += nums[pos]
+                } else {
+                    leftSum += nums[pos]
+                    backtrack(pos + 1, &leftSum)
+                    leftSum -= nums[pos]
+                }
+            }
+        }
+
+        var leftSum = S 
+        backtrack(0, &leftSum)
+        return results
+    }
+}
+```
+### Optimised with Memo
+- time complexity: O(n\*sum)
+- space complexity: O(n\*sum)
+```swift
+class Solution {
+    func findTargetSumWays(_ nums: [Int], _ S: Int) -> Int {
+        if nums.isEmpty {
+            return 0
+        }
+        var memo = [String: Int]()
+
+        func dp(_ pos: Int, _ leftSum: Int) -> Int {
+            if pos == nums.count {
+                if leftSum == 0 {
+                    return 1
+                }
+                return 0
+            }
+            let key = "\(pos),\(leftSum)"
+            if memo[key] != nil {
+                return memo[key]!
+            }
+
+            memo[key] = dp(pos + 1, leftSum - nums[pos]) + dp(pos + 1, leftSum + nums[pos])
+            return memo[key]!
+        }
+
+        return dp(0, S)
+    }
+}
+```
+### DP
+- time complexity: O(nS)
+- space complexity: O(nS)
+```swift
+class Solution {
+    func findTargetSumWays(_ nums: [Int], _ S: Int) -> Int {
+        if nums.isEmpty {
+            return 0
+        }
+        var sum = 0
+        for n in nums {
+            sum += n
+        }
+        if sum < S || (sum + S) % 2 == 1 {
+            return 0
+        }
+        return subsets(nums, (sum + S) / 2)
+    }
+
+    func subsets(_ nums: [Int], _ S: Int) -> Int {
+        let n = nums.count
+        var dp = Array(repeating: Array(repeating: 0, count: S + 1), count: n + 1)
+        for i in 0...n {
+            dp[i][0] = 1
+        }
+        for i in 1...n {
+            for j in 0...S {
+                if j >= nums[i - 1] {
+                    dp[i][j] = dp[i - 1][j] + dp[i - 1][j - nums[i - 1]]
+                } else {
+                    dp[i][j] = dp[i - 1][j]
+                }
+            }
+        }
+        return dp[n][S]
+    }
+}
+```
+### DP + Compression
+- time complexity: O(nS)
+- space complexity: O(S)
+```swift
+class Solution {
+    func findTargetSumWays(_ nums: [Int], _ S: Int) -> Int {
+        if nums.isEmpty {
+            return 0
+        }
+        var sum = 0
+        for n in nums {
+            sum += n
+        }
+        if sum < S || (sum + S) % 2 == 1 {
+            return 0
+        }
+        return subsets(nums, (sum + S) / 2)
+    }
+
+    func subsets(_ nums: [Int], _ S: Int) -> Int {
+        let n = nums.count
+        var dp = Array(repeating: 0, count: S + 1)
+        dp[0] = 1
+        for i in 1...n {
+            for j in stride(from: S, through: 0, by: -1) {
+                if j >= nums[i - 1] {
+                    dp[j] = dp[j] + dp[j - nums[i - 1]]
+                } else {
+                    dp[j] = dp[j]
+                }
+            }
+        }
+        return dp[S]
+    }
+}
+```
+## 1312. Minimum Insertion Steps to Make a String Palindrome
+### DP
+- time complexity: O(n^2)
+- space complexity: O(n^2)
+```swift
+class Solution {
+    func minInsertions(_ s: String) -> Int {
+        if s.count == 1 {
+            return 0
+        }
+        let sArr = [Character](s)
+        let n = sArr.count
+        var dp = Array(repeating: Array(repeating: 0, count: n), count: n)
+        for i in stride(from: n - 2, through: 0, by: -1) {
+            for j in i+1..<n {
+                if sArr[i] == sArr[j] {
+                    dp[i][j] = dp[i + 1][j - 1]
+                } else {
+                    dp[i][j] = min(dp[i][j - 1], dp[i + 1][j]) + 1
+                }
+            }
+        }
+        return dp[0][n - 1]
+    }
+}
+```
+### DP with State Compression
+- time complexity: O(n^2)
+- space complexity: O(n)
+```swift
+class Solution {
+    func minInsertions(_ s: String) -> Int {
+        if s.count == 1 {
+            return 0
+        }
+        let sArr = [Character](s)
+        let n = sArr.count
+        var dp = Array(repeating: 0, count: n)
+        for i in stride(from: n - 2, through: 0, by: -1) {
+            var pre = 0
+            for j in i+1..<n {
+                let tmp = dp[j]
+                if sArr[i] == sArr[j] {
+                    dp[j] = pre
+                } else {
+                    dp[j] = min(dp[j - 1], dp[j]) + 1
+                }
+                pre = tmp
+            }
+        }
+        return dp[n - 1]
+    }
+}
+```
+## 496. Next Greater Element I
+- time complexity: O(m + n)
+- space complexity: O(n), n is length of nums2
+```swift
+class Solution {
+    func nextGreaterElement(_ nums1: [Int], _ nums2: [Int]) -> [Int] {
+        var map = [Int: Int]()
+        var stack = [Int]()
+        var res = [Int]()
+        for i in 0..<nums2.count {
+            while !stack.isEmpty && nums2[i] > stack.last! {
+                map[stack.removeLast()] = nums2[i]
+            }
+            stack.append(nums2[i])
+        }
+        while !stack.isEmpty {
+            map[stack.removeLast()] = -1
+        }
+        for i in nums1 {
+            res.append(map[i]!)
+        }
+        return res
+    }
+}
+```
+## 682. Baseball Game
+- time complexity: O(n)
+- space complexity: O(n)
+```swift
+class Solution {
+    func calPoints(_ ops: [String]) -> Int {
+        var stack = [Int]()
+        var scores = 0
+        for i in ops {
+            if i == "C" {
+                let val = stack.removeLast()
+                scores -= val
+            } else if i == "D" {
+                let val = 2 * stack.last!
+                scores += val
+                stack.append(val)
+            } else if i == "+" {
+                let top = stack.removeLast()
+                let val = top + stack.last!
+                scores += val
+                stack.append(top)
+                stack.append(val)
+            } else {
+                let val = Int(i)!
+                scores += val
+                stack.append(val)
+            }
+        }
+        return scores
+    }
+}
+```
 ## 844. Backspace String Compare
 ### Rebuild String
 - time complexity: O(m + n)
@@ -196,9 +569,8 @@ class Solution {
         for i in 0..<nums.count {
             if dict[target - nums[i]] != nil {
                 return [dict[target - nums[i]]!, i]
-            } else {
-                dict[nums[i]] = i
             }
+            dict[nums[i]] = i
         }
         return [-1, -1]
     }
@@ -721,19 +1093,17 @@ class Solution {
 ```swift
 class Solution {
     func lengthOfLongestSubstring(_ s: String) -> Int {
-        var start = 0, maxLength = 0
+        var arr = [Character](s)
         var dict = [Character: Int]()
-        var sArray = [Character](s)
-
-        for end in 0..<sArray.count {
-            let rightChar = sArray[end]
+        var start = 0, maxLength = 0
+        for end in 0..<arr.count {
+            let rightChar = arr[end]
             if dict[rightChar] != nil {
                 start = max(start, dict[rightChar]! + 1)
             }
             dict[rightChar] = end
             maxLength = max(maxLength, end - start + 1)
         }
-
         return maxLength
     }
 }
@@ -1280,27 +1650,30 @@ class Solution {
 ```swift
 class Solution {
     func lengthOfLIS(_ nums: [Int]) -> Int {
-        if nums.count <= 1 {
-            return nums.count
+        if nums.isEmpty {
+            return 0
         }
-        
-        var dp = Array(repeating: 1, count: nums.count)
-        var maxAns = 1
-        for i in 1..<nums.count {
-            var maxVal = 0
+
+        var n = nums.count
+        var dp = Array(repeating: 1, count: n)
+        for i in 0..<n {
             for j in 0..<i {
-                if nums[i] > nums[j] {
-                    maxVal = max(maxVal, dp[j])
+                if nums[j] < nums[i] {
+                    dp[i] = max(dp[i], dp[j] + 1)
                 }
             }
-            dp[i] = maxVal + 1
-            maxAns = max(maxAns, dp[i])
         }
-        return maxAns
+
+        var maxLength = 0
+        for i in 0..<n {
+            maxLength = max(maxLength, dp[i])
+        }
+
+        return maxLength
     }
 }
 ```
-### Greedy + Binary Search
+### Binary Search
 - time complexity: O(nlogn) 
 - space complexity: O(n)
 ```swift
@@ -4590,13 +4963,9 @@ class Solution {
 
 
 ## 88. Merge Sorted Array
-
 ### two pointer from beginning
-
-time complexity: O(m + n)
-
-space complexity: O(m) 
-
+- time complexity: O(m + n)
+- space complexity: O(m) 
 ```swift
 class Solution {
     func merge(_ nums1: inout [Int], _ m: Int, _ nums2: [Int], _ n: Int) {
@@ -4625,13 +4994,9 @@ class Solution {
 
 
 ```
-
 ### two pointer from end
-
-time complexity: O(n + m)
-
-space complexity: O(1) 
-
+- time complexity: O(n + m)
+- space complexity: O(1) 
 ```swift
 class Solution {
     func merge(_ nums1: inout [Int], _ m: Int, _ nums2: [Int], _ n: Int) {
@@ -4650,8 +5015,6 @@ class Solution {
         nums1[...p2] = nums2[...p2]
     }
 }
-
-
 ```
 
 
@@ -6075,56 +6438,48 @@ class Solution {
     }
 }
 ```
-
-
-
 ## 2. Add Two Numbers
-
 使用伪head，双指针和基本数学加法(val1+val2+carry)来构建链表
-
-time complexity: O(max(m, n))
-
-space complexity: O(max(m, n)), 新链表长度为max(m, n)
-
+- time complexity: O(max(m, n))
+- space complexity: O(max(m, n)), 新链表长度为max(m, n)
 ```swift
 /**
  * Definition for singly-linked list.
  * public class ListNode {
  *     public var val: Int
  *     public var next: ListNode?
- *     public init() { self.val = 0; self.next = nil; }
- *     public init(_ val: Int) { self.val = val; self.next = nil; }
- *     public init(_ val: Int, _ next: ListNode?) { self.val = val; self.next = next; }
+ *     public init(_ val: Int) {
+ *         self.val = val
+ *         self.next = nil
+ *     }
  * }
  */
 class Solution {
     func addTwoNumbers(_ l1: ListNode?, _ l2: ListNode?) -> ListNode? {
-        var pesudoHead = ListNode(0)
-        var p1 = l1, p2 = l2, prev = pesudoHead
         var carry = 0
+        var p1 = l1, p2 = l2, dummyHead: ListNode? = ListNode(-1), prev = dummyHead
+        var sum = 0
         while p1 != nil || p2 != nil {
-            let val1 = p1 != nil ? p1!.val : 0
-            let val2 = p2 != nil ? p2!.val : 0
+            let val1 = p1 == nil ? 0 : p1!.val
+            let val2 = p2 == nil ? 0 : p2!.val
             let sum = val1 + val2 + carry
-            carry = sum / 10
-            let toAdd = ListNode(sum % 10)
-            prev.next = toAdd
-            prev = toAdd
             p1 = p1?.next
             p2 = p2?.next
+            // append new node at tail
+            carry = sum / 10
+            let node = ListNode(sum % 10)
+            prev?.next = node
+            prev = node
         }
-        
+
         if carry == 1 {
-            prev.next = ListNode(carry)
+            prev?.next = ListNode(carry)
         }
-        
-        return pesudoHead.next
+
+        return dummyHead?.next
     }
 }
 ```
-
-
-
 ## 707. Design Linked List
 
 ### Use Single Linked List
