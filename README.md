@@ -1,4 +1,192 @@
 # LeetCode-Swift-Algorithms
+## 516. Longest Palindromic Subsequence
+### DP
+- time complexity: O(n^2)
+- space complexity: O(n^2)
+```swift
+class Solution {
+    func longestPalindromeSubseq(_ s: String) -> Int {
+        var sArr = [Character](s)
+        let n = sArr.count
+        var dp = Array(repeating: Array(repeating: 0, count: n), count: n)
+        for i in 0..<n {
+            dp[i][i] = 1
+        }
+        for i in stride(from: n - 1, through: 0, by: -1) {
+            for j in i + 1..<n {
+                if sArr[i] == sArr[j] {
+                    dp[i][j] = dp[i + 1][j - 1] + 2
+                } else {
+                    dp[i][j] = max(dp[i + 1][j], dp[i][j - 1])
+                }
+            }
+        }
+        return dp[0][n - 1]
+    }
+}
+```
+### DP + Compression
+- time complexity: O(n^2)
+- space complexity: O(n)
+```swift
+class Solution {
+    func longestPalindromeSubseq(_ s: String) -> Int {
+        var sArr = [Character](s)
+        let n = sArr.count
+        var dp = Array(repeating: 1, count: n)
+        for i in stride(from: n - 1, through: 0, by: -1) {
+            var pre = 0
+            for j in i + 1..<n {
+                let tmp = dp[j]
+                if sArr[i] == sArr[j] {
+                    dp[j] = pre + 2
+                } else {
+                    dp[j] = max(dp[j], dp[j - 1])
+                }
+                pre = tmp
+            }
+        }
+        return dp[n - 1]
+    }
+}
+```
+## 354. Russian Doll Envelopes
+### DP
+- time complexity: O(n^2)
+- space complexity: O(n)
+```swift
+class Solution {
+    func maxEnvelopes(_ envelopes: [[Int]]) -> Int {
+        let n = envelopes.count
+        let sortedEnvelopes = envelopes.sorted {
+            return $0[0] == $1[0] ? $0[1] > $1[1] : $0[0] < $1[0]
+        }
+        var heights = [Int]()
+        for envelope in sortedEnvelopes {
+            heights.append(envelope[1]);
+        }
+
+        var dp = Array(repeating: 1, count: n);
+        for i in 0..<n {
+            for j in 0..<i {
+                if heights[i] > heights[j] {
+                    dp[i] = max(dp[i], dp[j] + 1)
+                }
+            }
+        }
+
+        var length = 0
+        for l in dp {
+            length = max(l, length)
+        }
+
+        return length
+    }
+}
+```
+### Binary Search
+- time complexity: O(nlogn)
+- space complexity: O(n)
+```swift
+class Solution {
+    func maxEnvelopes(_ envelopes: [[Int]]) -> Int {
+        let n = envelopes.count
+        let sortedEnvelopes = envelopes.sorted {
+            return $0[0] == $1[0] ? $0[1] > $1[1] : $0[0] < $1[0]
+        }
+        var heights = [Int]()
+        for envelope in sortedEnvelopes {
+            heights.append(envelope[1]);
+        }
+        return lengthOfLIS(heights)
+    }
+
+    func lengthOfLIS(_ nums: [Int]) -> Int {
+        var piles = 0, n = nums.count
+        var top = Array(repeating: 0, count: n)
+        for i in 0..<n {
+            let poker = nums[i]
+            var left = 0, right = piles
+            while left < right {
+                let mid = (left + right) / 2
+                if top[mid] >= poker {
+                    right = mid
+                } else {
+                    left = mid + 1
+                }
+            }
+            if left == piles {
+                piles += 1
+            }
+            top[left] = poker
+        }
+        return piles
+    }
+}
+```
+## 518. Coin Change 2
+### DP
+- time complexity: O(n\*amount)
+- space complexity: O(n\*amount)
+```swift
+class Solution {
+    func change(_ amount: Int, _ coins: [Int]) -> Int {
+        if amount == 0 {
+            return 1
+        }
+        if coins.isEmpty {
+            return 0
+        }
+        let n = coins.count
+        var dp = Array(repeating: Array(repeating: 0, count: amount + 1), count: n + 1)
+        for i in 0...n {
+            dp[i][0] = 1
+        }
+
+        for i in 1...n {
+            for j in 1...amount {
+                if j - coins[i - 1] < 0 {
+                    dp[i][j] = dp[i - 1][j]
+                } else {
+                    dp[i][j] = dp[i - 1][j] + dp[i][j - coins[i - 1]]
+                }
+            }
+        }
+
+        return dp[n][amount]
+    }
+}
+```
+### DP + Compression
+- time complexity: O(n\*amount)
+- space complexity: O(amount)
+```swift
+class Solution {
+    func change(_ amount: Int, _ coins: [Int]) -> Int {
+        if amount == 0 {
+            return 1
+        }
+        if coins.isEmpty {
+            return 0
+        }
+        let n = coins.count
+        var dp = Array(repeating: 0, count: amount + 1)
+        dp[0] = 1
+
+        for i in 0..<n {
+            for j in 1...amount {
+                if j - coins[i] < 0 {
+                    dp[j] = dp[j]
+                } else {
+                    dp[j] = dp[j] + dp[j - coins[i]]
+                }
+            }
+        }
+
+        return dp[amount]
+    }
+}
+```
 ## 416. Partition Equal Subset Sum
 ### DP
 - time complexity: O(n\*sum)
@@ -1559,8 +1747,9 @@ class Solution {
 }
 ```
 ## 72. Edit Distance
-- time complexity: O(mn) 
-- space complexity: O(mn)
+### Recursion
+- time complexity: O(3^(l1+l2))
+- space complexity: O(l1+l2)
 ```swift
 class Solution {
     func minDistance(_ word1: String, _ word2: String) -> Int {
@@ -1570,52 +1759,246 @@ class Solution {
         if word2.isEmpty {
             return word1.count
         }
-        
-        var arr1 = word1.map{ String($0) }, arr2 = word2.map{ String($0) }
-        var dp = Array(repeating: Array(repeating: 0, count: arr2.count + 1), count: arr1.count + 1)
-        for i in 1...arr1.count {
+
+        let arr1 = [Character](word1)
+        let arr2 = [Character](word2)
+
+        func dp(_ i: Int, _ j: Int) -> Int {
+            if i < 0 {
+                return j + 1
+            }
+            if j < 0 {
+                return i + 1
+            }
+
+            if arr1[i] == arr2[j] {
+                return dp(i - 1, j - 1)
+            } else {
+                return min(dp(i, j - 1) + 1, dp(i - 1, j) + 1, dp(i - 1, j - 1) + 1)
+            }
+        }
+
+        return dp(arr1.count - 1, arr2.count - 1)
+    }
+}
+```
+### Recursion + Memo
+- time complexity: O(l1\*l2)
+- space complexity: O(l1\*l2)
+```swift
+class Solution {
+    func minDistance(_ word1: String, _ word2: String) -> Int {
+        if word1.isEmpty {
+            return word2.count
+        }
+        if word2.isEmpty {
+            return word1.count
+        }
+
+        let arr1 = [Character](word1)
+        let arr2 = [Character](word2)
+        var memo = [String: Int]()
+
+        func dp(_ i: Int, _ j: Int) -> Int {
+            let key = "\(i),\(j)"
+            if memo[key] != nil {
+                return memo[key]!
+            }
+            if i < 0 {
+                return j + 1
+            }
+            if j < 0 {
+                return i + 1
+            }
+
+            if arr1[i] == arr2[j] {
+                memo[key] = dp(i - 1, j - 1)
+                return memo[key]!
+            } else {
+                memo[key] = min(dp(i, j - 1) + 1, dp(i - 1, j) + 1, dp(i - 1, j - 1) + 1)
+                return memo[key]!
+            }
+        }
+
+        return dp(arr1.count - 1, arr2.count - 1)
+    }
+}
+```
+### DP
+- time complexity: O(l1\*l2)
+- space complexity: O(l1\*l2)
+```swift
+class Solution {
+    func minDistance(_ word1: String, _ word2: String) -> Int {
+        if word1.isEmpty {
+            return word2.count
+        }
+        if word2.isEmpty {
+            return word1.count
+        }
+
+        let arr1 = [Character](word1), arr2 = [Character](word2)
+        let l1 = arr1.count, l2 = arr2.count
+        var dp = Array(repeating: Array(repeating: 0, count: l2 + 1), count: l1 + 1)
+        for i in 1...l1 {
             dp[i][0] = i
         }
-        for j in 1...arr2.count {
+        for j in 1...l2 {
             dp[0][j] = j
         }
         
-        for i in 1...arr1.count {
-            for j in 1...arr2.count {
+        for i in 1...l1 {
+            for j in 1...l2 {
                 if arr1[i - 1] == arr2[j - 1] {
                     dp[i][j] = dp[i - 1][j - 1]
                 } else {
-                    dp[i][j] = min(dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + 1)
+                    dp[i][j] = min(dp[i - 1][j - 1] + 1, dp[i][j - 1] + 1, dp[i - 1][j] + 1)
                 }
             }
         }
+        return dp[l1][l2]
+    }
+}
+```
+### DP + Compression
+- time complexity: O(l1\*l2)
+- space complexity: O(l2)
+```swift
+class Solution {
+    func minDistance(_ word1: String, _ word2: String) -> Int {
+        if word1.isEmpty {
+            return word2.count
+        }
+        if word2.isEmpty {
+            return word1.count
+        }
+
+        let arr1 = [Character](word1), arr2 = [Character](word2)
+        let l1 = arr1.count, l2 = arr2.count
+        var dp = Array(repeating: 0, count: l2 + 1)
+        for j in 1...l2 {
+            dp[j] = j
+        }
         
-        return dp[arr1.count][arr2.count]
+        for i in 1...l1 {
+            var pre = dp[0]
+            dp[0] = i
+            for j in 1...l2 {
+                let tmp = dp[j]
+                if arr1[i - 1] == arr2[j - 1] {
+                    dp[j] = pre
+                } else {
+                    dp[j] = min(pre + 1, dp[j - 1] + 1, dp[j] + 1)
+                }
+                pre = tmp
+            }
+        }
+        return dp[l2]
     }
 }
 ```
 ## 1143. Longest Common Subsequence
-### DP
-- time complexity: O(mn) 
-- space complexity: O(mn)
+### Recursion
+- time complexity: O(2^(l1\*l2)) 
+- space complexity: O(l1 + l2)
 ```swift
 class Solution {
     func longestCommonSubsequence(_ text1: String, _ text2: String) -> Int {
-        let t1 = Array(text1)
-        let t2 = Array(text2)
-        
-        var dp = Array(repeating: Array(repeating: 0, count: t2.count + 1), count: t1.count + 1)
-        for i in 1...t1.count {
-            for j in 1...t2.count {
-                if t1[i - 1] == t2[j - 1] {
+        var arr1 = [Character](text1), arr2 = [Character](text2)
+        let l1 = arr1.count, l2 = arr2.count
+
+        func dp(_ i: Int, _ j: Int) -> Int {
+            if i < 0 || j < 0 {
+                return 0
+            }
+            if arr1[i] == arr2[j] {
+                return dp(i - 1, j - 1) + 1
+            } else {
+                return max(dp(i - 1, j), dp(i, j - 1))
+            }
+        }
+
+        return dp(l1 - 1, l2 - 1)
+    }
+}
+```
+### Recursion + Memo
+- time complexity: O(l1\*l2) 
+- space complexity: O(l1\*l2)
+```swift
+class Solution {
+    func longestCommonSubsequence(_ text1: String, _ text2: String) -> Int {
+        var arr1 = [Character](text1), arr2 = [Character](text2)
+        let l1 = arr1.count, l2 = arr2.count
+        var memo = [String: Int]()
+
+        func dp(_ i: Int, _ j: Int) -> Int {
+            if i < 0 || j < 0 {
+                return 0
+            }
+
+            let key = "\(i),\(j)"
+            if memo[key] != nil {
+                return memo[key]!
+            }
+            if arr1[i] == arr2[j] {
+                memo[key] = dp(i - 1, j - 1) + 1
+                return memo[key]!
+            } else {
+                memo[key] = max(dp(i - 1, j), dp(i, j - 1))
+                return memo[key]!
+            }
+        }
+
+        return dp(l1 - 1, l2 - 1)
+    }
+}
+```
+### DP
+- time complexity: O(l1\*l2) 
+- space complexity: O(l1\*l2)
+```swift
+class Solution {
+    func longestCommonSubsequence(_ text1: String, _ text2: String) -> Int {
+        var arr1 = [Character](text1), arr2 = [Character](text2)
+        let l1 = arr1.count, l2 = arr2.count
+        var dp = Array(repeating: Array(repeating: 0, count: l2 + 1), count: l1 + 1)
+        for i in 1...l1 {
+            for j in 1...l2 {
+                if arr1[i - 1] == arr2[j - 1] {
                     dp[i][j] = dp[i - 1][j - 1] + 1
                 } else {
                     dp[i][j] = max(dp[i - 1][j], dp[i][j - 1])
                 }
             }
         }
-        return dp[t1.count][t2.count]
-    }  
+        return dp[l1][l2]
+    }
+}
+```
+### DP + Compression
+- time complexity: O(l1\*l2) 
+- space complexity: O(l2)
+```swift
+class Solution {
+    func longestCommonSubsequence(_ text1: String, _ text2: String) -> Int {
+        var arr1 = [Character](text1), arr2 = [Character](text2)
+        let l1 = arr1.count, l2 = arr2.count
+        var dp = Array(repeating: 0, count: l2 + 1)
+        for i in 1...l1 {
+            var pre = 0
+            for j in 1...l2 {
+                let tmp = dp[j]
+                if arr1[i - 1] == arr2[j - 1] {
+                    dp[j] = pre + 1
+                } else {
+                    dp[j] = max(dp[j], dp[j - 1])
+                }
+                pre = tmp
+            }
+        }
+        return dp[l2]
+    }
 }
 ```
 ## 139. Word Break
