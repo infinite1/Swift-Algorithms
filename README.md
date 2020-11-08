@@ -1,4 +1,769 @@
 # LeetCode-Swift-Algorithms
+## 51. N-Queens
+- time complexity: O(n!)
+- space complexity: O(n)
+```swift
+class Solution {
+    func solveNQueens(_ n: Int) -> [[String]] {
+        var res = [[String]]()
+
+        func backtrack(_ board: inout [[Character]], _ row: Int) {
+            if row == board.count {
+                res.append(board.map{String($0)})
+                return
+            }
+
+            for col in 0..<n {
+                if !isValid(board, row, col) {
+                    continue
+                }
+                board[row][col] = "Q"
+                backtrack(&board, row + 1)
+                board[row][col] = "."
+            }
+
+        }
+
+        var board: [[Character]] = Array(repeating: Array(repeating: ".", count: n), count: n)
+        backtrack(&board, 0)
+        return res
+    }
+
+    func isValid(_ board: [[Character]], _ row: Int, _ col: Int) -> Bool {
+        let n = board.count
+
+        // check column
+        for i in 0..<n {
+            if board[i][col] == "Q" {
+                return false
+            }
+        }
+
+        // check top right
+        var i = row - 1, j = col + 1
+        while i >= 0 && j < n {
+            if board[i][j] == "Q" {
+                return false
+            }
+            i -= 1
+            j += 1
+        }
+
+        // check top left
+        i = row - 1
+        j = col - 1
+        while i >= 0 && j >= 0 {
+            if board[i][j] == "Q" {
+                return false
+            }
+            i -= 1
+            j -= 1
+        }
+
+        return true
+    }  
+}
+```
+## 712. Minimum ASCII Delete Sum for Two Strings
+- time complexity: O(mn)
+- space complexity: O(mn)
+```swift
+class Solution {
+    func minimumDeleteSum(_ s1: String, _ s2: String) -> Int {
+        var arr1 = [Character](s1), arr2 = [Character](s2)
+        let m = arr1.count, n = arr2.count
+        var memo = [String: Int]()
+        
+        func dp(_ i: Int, _ j: Int) -> Int {
+            let key = "\(i),\(j)"
+            var res = 0
+            if i == m {
+                for t in j..<n {
+                    res += Int(arr2[t].asciiValue!)
+                }
+                return res
+            }
+            if j == n {
+                for t in i..<m {
+                    res += Int(arr1[t].asciiValue!)
+                }
+                return res
+            }
+
+            if memo[key] != nil {
+                return memo[key]!
+            }
+
+            if arr1[i] == arr2[j] {
+                memo[key] = dp(i + 1, j + 1)
+            } else {
+                memo[key] = min(Int(arr1[i].asciiValue!) + dp(i + 1, j), Int(arr2[j].asciiValue!) + dp(i, j + 1))
+            }
+
+            return memo[key]!
+        }
+
+        return dp(0, 0)
+    }
+}
+```
+## 583. Delete Operation for Two Strings
+- time complexity: O(mn)
+- space complexity: O(n)
+```swift
+class Solution {
+    func minDistance(_ word1: String, _ word2: String) -> Int {
+        if word1.isEmpty {
+            return word2.count
+        }
+        if word2.isEmpty {
+            return word1.count
+        }
+        let m = word1.count, n = word2.count
+        let lcs = longestCommonSubsequence(word1, word2)
+        return m + n - 2 * lcs
+    }
+
+    func longestCommonSubsequence(_ text1: String, _ text2: String) -> Int {
+        var arr1 = [Character](text1), arr2 = [Character](text2)
+        let l1 = arr1.count, l2 = arr2.count
+        var dp = Array(repeating: 0, count: l2 + 1)
+        for i in 1...l1 {
+            var pre = 0
+            for j in 1...l2 {
+                let tmp = dp[j]
+                if arr1[i - 1] == arr2[j - 1] {
+                    dp[j] = pre + 1
+                } else {
+                    dp[j] = max(dp[j], dp[j - 1])
+                }
+                pre = tmp
+            }
+        }
+        return dp[l2]
+    } 
+}
+```
+## 337. House Robber III
+### DP Approach1
+- time complexity: O(n)
+- space complexity: O(n)
+```swift
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     public var val: Int
+ *     public var left: TreeNode?
+ *     public var right: TreeNode?
+ *     public init(_ val: Int) {
+ *         self.val = val
+ *         self.left = nil
+ *         self.right = nil
+ *     }
+ * }
+ */
+extension TreeNode: Equatable {
+    public static func == (lhs: TreeNode, rhs: TreeNode) -> Bool {
+        return lhs === rhs
+    }
+}
+
+extension TreeNode: Hashable {
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(ObjectIdentifier(self))
+    }
+}
+
+class Solution {
+    var memo = [TreeNode?: Int]()
+
+    func rob(_ root: TreeNode?) -> Int {
+        if root == nil {
+            return 0
+        }
+        if memo[root] != nil {
+            return memo[root]!
+        }
+        let robIt = root!.val + (root?.left == nil ? 0 : rob(root?.left?.left) + rob(root?.left?.right)) 
+            + (root?.right == nil ? 0 : rob(root?.right?.left) + rob(root?.right?.right))
+        let notRobIt = rob(root?.left) + rob(root?.right)
+        memo[root] = max(robIt, notRobIt)
+        return memo[root]!
+    }
+}
+```
+### DP Approach2
+- time complexity: O(n)
+- space complexity: O(n)
+```swift
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     public var val: Int
+ *     public var left: TreeNode?
+ *     public var right: TreeNode?
+ *     public init(_ val: Int) {
+ *         self.val = val
+ *         self.left = nil
+ *         self.right = nil
+ *     }
+ * }
+ */
+class Solution {
+    func rob(_ root: TreeNode?) -> Int {
+        let res = dp(root)
+        return max(res[0], res[1])
+    }
+
+    func dp(_ root: TreeNode?) -> [Int] {
+        if root == nil {
+            return [0, 0]
+        }
+        let left = dp(root?.left), right = dp(root?.right)
+        let robIt = root!.val + left[0] + right[0]
+        let notRobIt = max(left[0], left[1]) + max(right[0], right[1])
+        return [notRobIt, robIt]
+    }
+}
+```
+## 213. House Robber II
+- time complexity: O(n)
+- space complexity: O(1)
+```swift
+class Solution {
+    func rob(_ nums: [Int]) -> Int {
+        let n = nums.count
+        if n == 1 {
+            return nums[0]
+        }
+        return max(robWithRange(nums, 0, n - 2), robWithRange(nums, 1, n - 1))
+    }
+
+    func robWithRange(_ nums: [Int], _ start: Int, _ end: Int) -> Int {
+        let n = nums.count
+        var dp1 = 0, dp2 = 0
+        for i in stride(from: end, through: start, by: -1) {
+            let tmp = dp1
+            dp1 = max(dp1, nums[i] + dp2)
+            dp2 = tmp
+        }
+        return dp1
+    }
+}
+```
+## 198. House Robber
+### Recursion + Memo
+- time complexity: O(n)
+- space complexity: O(n)
+```swift
+class Solution {
+    func rob(_ nums: [Int]) -> Int {
+        var memo = [Int: Int]()
+        let n = nums.count
+
+        func dp(_ pos: Int) -> Int {
+            if pos >= n {
+                return 0
+            }
+            if memo[pos] != nil {
+                return memo[pos]!
+            }
+            memo[pos] = max(dp(pos + 1), nums[pos] + dp(pos + 2))
+            return memo[pos]!
+        }
+
+        return dp(0)
+    }
+}
+```
+### DP
+- time complexity: O(n)
+- space complexity: O(n)
+```swift
+class Solution {
+    func rob(_ nums: [Int]) -> Int {
+        let n = nums.count
+        var dp = Array(repeating: 0, count: n + 2)
+        for i in stride(from: n - 1, through: 0, by: -1) {
+            dp[i] = max(dp[i + 1], nums[i] + dp[i + 2])
+        }
+        return dp[0]
+    }
+}
+```
+### DP + Compress
+- time complexity: O(n)
+- space complexity: O(1)
+```swift
+class Solution {
+    func rob(_ nums: [Int]) -> Int {
+        let n = nums.count
+        var dp1 = 0, dp2 = 0
+        for i in stride(from: n - 1, through: 0, by: -1) {
+            let tmp = dp1
+            dp1 = max(dp1, nums[i] + dp2)
+            dp2 = tmp
+        }
+        return dp1
+    }
+}
+```
+## 123. Best Time to Buy and Sell Stock III
+- time complexity: O(n)
+- space complexity: O(n)
+```swift
+class Solution {
+    func maxProfit(_ prices: [Int]) -> Int {
+        if prices.isEmpty {
+            return 0
+        }
+        let n = prices.count, K = 2
+        var dp = Array(repeating: Array(repeating: Array(repeating: 0, count: 2), count: K + 1), count: n + 1)
+        for k in 0...K {
+            dp[0][k][0] = 0
+            dp[0][k][1] = Int.min
+        }
+        for i in 1...n {
+            for k in stride(from: K, to: 0, by: -1) {
+                dp[i][k][0] = max(dp[i - 1][k][0], dp[i - 1][k][1] + prices[i - 1])
+                dp[i][k][1] = max(dp[i - 1][k][1], dp[i - 1][k - 1][0] - prices[i - 1])
+            }
+        }
+        return dp[n][K][0]
+    }
+}
+```
+## 714. Best Time to Buy and Sell Stock with Transaction Fee
+### DP
+- time complexity: O(n)
+- space complexity: O(n)
+```swift
+class Solution {
+    func maxProfit(_ prices: [Int], _ fee: Int) -> Int {
+        if prices.isEmpty {
+            return 0
+        }
+        let n = prices.count
+        var dp = Array(repeating: Array(repeating: 0, count: 2), count: n + 1)
+        dp[0][0] = 0
+        dp[0][1] = Int.min
+        for i in 1...n {
+            dp[i][0] = max(dp[i - 1][0], dp[i - 1][1] + prices[i - 1])
+            dp[i][1] = max(dp[i - 1][1], dp[i - 1][0] - prices[i - 1] - fee)
+        }
+        return dp[n][0]
+    }
+}
+```
+### DP + Compress
+- time complexity: O(n)
+- space complexity: O(1)
+```swift
+class Solution {
+    func maxProfit(_ prices: [Int], _ fee: Int) -> Int {
+        if prices.isEmpty {
+            return 0
+        }
+        let n = prices.count
+        var dp0 = 0
+        var dp1 = Int.min
+        for i in 1...n {
+            dp0 = max(dp0, dp1 + prices[i - 1])
+            dp1 = max(dp1, dp0 - prices[i - 1] - fee)
+        }
+        return dp0
+    }
+}
+```
+## 309. Best Time to Buy and Sell Stock with Cooldown
+### DP
+- time complexity: O(n)
+- space complexity: O(n)
+```swift
+class Solution {
+    func maxProfit(_ prices: [Int]) -> Int {
+        if prices.isEmpty || prices.count == 1 {
+            return 0
+        }
+        let n = prices.count
+        var dp = Array(repeating: Array(repeating: 0, count: 2), count: n + 1)
+        dp[0][0] = 0
+        dp[0][1] = Int.min
+        var dpPre = 0
+        for i in 1...n {
+            let tmp = dp[i - 1][0]
+            dp[i][0] = max(dp[i - 1][0], dp[i - 1][1] + prices[i - 1])
+            dp[i][1] = max(dp[i - 1][1], dpPre - prices[i - 1])
+            dpPre = dp[i - 1][0]
+        }
+        return dp[n][0]
+    }
+}
+```
+### DP + Compress
+- time complexity: O(n)
+- space complexity: O(1)
+```swift
+class Solution {
+    func maxProfit(_ prices: [Int]) -> Int {
+        if prices.isEmpty || prices.count == 1 {
+            return 0
+        }
+        let n = prices.count
+        var dp0 = 0, dp1 = Int.min, dpPre = 0
+        for i in 1...n {
+            let tmp = dp0
+            dp0 = max(dp0, dp1 + prices[i - 1])
+            dp1 = max(dp1, dpPre - prices[i - 1])
+            dpPre = tmp
+        }
+        return dp0
+    }
+}
+```
+## 122. Best Time to Buy and Sell Stock II
+### DP
+- time complexity: O(n)
+- space complexity: O(n)
+```swift
+class Solution {
+    func maxProfit(_ prices: [Int]) -> Int {
+        if prices.isEmpty {
+            return 0
+        }
+        let n = prices.count
+        var dp = Array(repeating: Array(repeating: 0, count: 2), count: n + 1)
+        dp[0][0] = 0
+        dp[0][1] = Int.min
+        for i in 1...n {
+            dp[i][0] = max(dp[i - 1][0], dp[i - 1][1] + prices[i - 1])
+            dp[i][1] = max(dp[i - 1][1], dp[i - 1][0] - prices[i - 1])
+        }
+        return dp[n][0]
+    }
+}
+```
+### DP + Compress
+- time complexity: O(n)
+- space complexity: O(1)
+```swift
+class Solution {
+    func maxProfit(_ prices: [Int]) -> Int {
+        if prices.isEmpty {
+            return 0
+        }
+        let n = prices.count
+        var dp0 = 0
+        var dp1 = Int.min
+        for i in 1...n {
+            dp0 = max(dp0, dp1 + prices[i - 1])
+            dp1 = max(dp1, dp0 - prices[i - 1])
+        }
+        return dp0
+    }
+}
+```
+### One Iteration
+- time complexity: O(n)
+- space complexity: O(1)
+```swift
+class Solution {
+    func maxProfit(_ prices: [Int]) -> Int {
+        if prices.isEmpty {
+            return 0
+        }
+        let n = prices.count
+        var maxProfit = 0
+        for i in 1..<n {
+            if prices[i] > prices[i - 1] {
+                maxProfit += prices[i] - prices[i - 1]
+            }
+        }
+        return maxProfit
+    }
+}
+```
+## 121. Best Time to Buy and Sell Stock
+### DP
+- time complexity: O(n)
+- space complexity: O(n)
+```swift
+class Solution {
+    func maxProfit(_ prices: [Int]) -> Int {
+        if prices.isEmpty {
+            return 0
+        }
+        let n = prices.count
+        var dp = Array(repeating: Array(repeating: 0, count: 2), count: n + 1)
+        dp[0][0] = 0
+        dp[0][1] = Int.min
+        for i in 1...n {
+            dp[i][0] = max(dp[i - 1][0], dp[i - 1][1] + prices[i - 1])
+            dp[i][1] = max(dp[i - 1][1], -prices[i - 1])
+        }
+        return dp[n][0]
+    }
+}
+```
+### DP + Compress
+- time complexity: O(n)
+- space complexity: O(1)
+```swift
+class Solution {
+    func maxProfit(_ prices: [Int]) -> Int {
+        if prices.isEmpty {
+            return 0
+        }
+        let n = prices.count
+        var dp0 = 0
+        var dp1 = Int.min
+        for i in 1...n {
+            dp0 = max(dp0, dp1 + prices[i - 1])
+            dp1 = max(dp1, -prices[i - 1])
+        }
+        return dp0
+    }
+}
+```
+### One Iteration
+- time complexity: O(n)
+- space complexity: O(1)
+```swift
+class Solution {
+    func maxProfit(_ prices: [Int]) -> Int {
+        if prices.isEmpty {
+            return 0
+        }
+        let n = prices.count
+        var maxProfit = 0, minPrice = Int.max
+        for price in prices {
+            if price < minPrice {
+                minPrice = price
+            } else {
+                maxProfit = max(maxProfit, price - minPrice)
+            }
+        }
+        return maxProfit
+    }
+}
+```
+## 312. Burst Balloons
+- time complexity: O(n^3)
+- space complexity: O(n^2)
+```swift
+class Solution {
+    func maxCoins(_ nums: [Int]) -> Int {
+        if nums.isEmpty {
+            return 0
+        }
+        let n = nums.count
+        var points = Array(repeating: 0, count: n + 2)
+        points[0] = 1
+        points[n + 1] = 1
+        for i in 1...n {
+            points[i] = nums[i - 1]
+        }
+        var dp = Array(repeating: Array(repeating: 0, count: n + 2), count: n + 2)
+        for i in stride(from: n, through: 0, by: -1) {
+            for j in i + 1..<n + 2 {
+                for k in i+1..<j {
+                    dp[i][j] = max(dp[i][j], dp[i][k] + points[i] * points[k] * points[j] + dp[k][j])
+                }
+            }
+        }
+        return dp[0][n + 1]
+    }
+}
+```
+## 887. Super Egg Drop
+- time complexity: O(KNlogN)
+- space complexity: O(KN)
+```swift
+class Solution {
+    func superEggDrop(_ K: Int, _ N: Int) -> Int {
+        var memo = [String: Int]()
+
+        func dp(_ K: Int, _ N: Int) -> Int {
+            let key = "\(K),\(N)"
+            if memo[key] != nil {
+                return memo[key]!
+            }
+            if N == 0 {
+                return 0
+            }
+            if K == 1 {
+                return N
+            }
+            var res = Int.max
+            var lo = 1, hi = N
+            while lo <= hi {
+                let mid = (lo + hi) / 2
+                let broken = dp(K - 1, mid - 1)
+                let notBroken = dp(K, N - mid)
+                if broken > notBroken {
+                    hi = mid - 1
+                    res = min(res, broken + 1)
+                } else {
+                    lo = mid + 1 
+                    res = min(res, notBroken + 1)
+                }
+            }
+            memo[key] = res
+            return memo[key]!
+        }
+
+        return dp(K, N)
+    }
+}
+```
+## 10. Regular Expression Matching
+- time complexity: O(sp)
+- space complexity: O(sp)
+```swift
+class Solution {
+    func isMatch(_ s: String, _ p: String) -> Bool {
+        let arrS = [Character](s), arrP = [Character](p)
+        var memo = [String: Bool]()
+
+        func dp(_ i: Int, _ j: Int) -> Bool {
+            let key = "\(i),\(j)"
+            if memo[key] != nil {
+                return memo[key]!
+            }
+            if j == arrP.count {
+                return i == arrS.count
+            }
+
+            let first = i < arrS.count && (arrS[i] == arrP[j] || arrP[j] == ".")
+            if j <= arrP.count - 2 && arrP[j + 1] == "*" {
+                memo[key] = dp(i, j + 2) || (first && dp(i + 1, j)) 
+            } else {
+                memo[key] = first && dp(i + 1, j + 1) 
+            }
+
+            return memo[key]!
+        }
+
+        return dp(0, 0)
+    }
+}
+```
+## 651. 4 Keys Keyboard
+- time complexity: O(n^2)
+- space complexity: O(n)
+```swift
+class Solution {
+    func maxA(_ N: Int) -> Int {
+        var dp = Array(repeating: 0, count: N + 1)
+        for i in 1...N {
+            dp[i] = dp[i - 1] + 1
+            for j in stride(from: 2, to: i, by: 1) {
+                dp[i] = max(dp[i], dp[j - 2] * (i - j + 1))
+            }
+        }
+        return dp[N]
+    }
+}
+```
+## 877. Stone Game
+### DP
+- time complexity: O(n^2)
+- space complexity: O(n^2)
+```swift
+class Solution {
+    func stoneGame(_ piles: [Int]) -> Bool {
+        let n = piles.count
+        var dp = Array(repeating: Array(repeating: 0, count: n), count: n)
+        for i in 0..<n {
+            dp[i][i] = piles[i]
+        }
+
+        for i in stride(from: n - 2, through: 0, by: -1) {
+            for j in i + 1 ..< n {
+                dp[i][j] = max(piles[i] - dp[i + 1][j], piles[j] - dp[i][j - 1])
+            }
+        }
+       
+        return dp[0][n - 1] > 0
+    }
+}
+```
+### DP + Compression
+- time complexity: O(n^2)
+- space complexity: O(n)
+```swift
+class Solution {
+    func stoneGame(_ piles: [Int]) -> Bool {
+        let n = piles.count
+        var dp = Array(repeating: 0, count: n)
+        for i in 0..<n {
+            dp[i] = piles[i]
+        }
+
+        for i in stride(from: n - 2, through: 0, by: -1) {
+            for j in i + 1 ..< n {
+                dp[j] = max(piles[i] - dp[j], piles[j] - dp[j - 1])
+            }
+        }
+       
+        return dp[n - 1] > 0
+    }
+}
+```
+## 452. Minimum Number of Arrows to Burst Balloons
+- time complexity: O(nlogn)
+- space complexity: O(1)
+```swift
+class Solution {
+    func findMinArrowShots(_ points: [[Int]]) -> Int {
+        if points.isEmpty {
+            return 0
+        }
+
+        let sortedIntervals = points.sorted {
+            $0[1] < $1[1]
+        }
+        var count = 1
+        var end = sortedIntervals[0][1]
+        for interval in sortedIntervals {
+            let start = interval[0]
+            if start > end {
+                count += 1
+                end = interval[1]
+            }
+        }
+
+        return count
+    }
+}
+```
+## 435. Non-overlapping Intervals
+- time complexity: O(nlogn)
+- space complexity: O(1)
+```swift
+class Solution {
+    func eraseOverlapIntervals(_ intervals: [[Int]]) -> Int {
+        if intervals.isEmpty {
+            return 0
+        }
+
+        let sortedIntervals = intervals.sorted {
+            $0[1] < $1[1]
+        }
+        var count = 1
+        var end = sortedIntervals[0][1]
+        for interval in sortedIntervals {
+            let start = interval[0]
+            if start >= end {
+                count += 1
+                end = interval[1]
+            }
+        }
+
+        return intervals.count - count
+    }
+}
+```
 ## 516. Longest Palindromic Subsequence
 ### DP
 - time complexity: O(n^2)
@@ -2171,43 +2936,39 @@ class Solution {
 }
 ```
 ## 45. Jump Game II
-### Greedy
 - time complexity: O(n) 
 - space complexity: O(1)
 ```swift
 class Solution {
     func jump(_ nums: [Int]) -> Int {
-        var end = 0
-        var maxPosition = 0
-        var steps = 0
-        for i in 0 ..< nums.count - 1 {
-            maxPosition = max(maxPosition, nums[i] + i)
-            if i == end {
-                end = maxPosition
-                steps += 1
+        let n = nums.count
+        var furthest = 0, end = 0, jump = 0
+        for i in 0..<n - 1 {
+            furthest = max(furthest, i + nums[i])
+            if end == i {
+                end = furthest
+                jump += 1
             }
         }
-        return steps
+        return jump
     }
 }
 ```
 ## 55. Jump Game
-### Greedy
 - time complexity: O(n) 
 - space complexity: O(1) 
 ```swift
 class Solution {
     func canJump(_ nums: [Int]) -> Bool {
-        var rightmost = 0
-        for i in 0..<nums.count {
-            if i <= rightmost {
-                rightmost = max(rightmost, nums[i] + i)
-                if rightmost >= nums.count - 1 {
-                    return true
-                }
+        let n = nums.count 
+        var furthest = 0
+        for i in 0..<n - 1 {
+            furthest = max(furthest, i + nums[i])
+            if furthest <= i {
+                return false
             }
         }
-        return false
+        return furthest >= n - 1
     }
 }
 ```
